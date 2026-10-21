@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rechen-Piraten – Die Schatzsuche im 1x1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sea-deep:#0a3441;
+    --sea-mid:#0f5e78;
+    --sea-light:#1a90b4;
+    --wave:#2aa8c9;
+    --sand:#f6e0ac;
+    --sand-light:#fdf3d8;
+    --gold:#eab039;
+    --gold-dark:#c68e22;
+    --treasure:#d7ae3a;
+    --coral:#ff6f5e;
+    --coral-dark:#d94b3c;
+    --leaf:#3fac71;
+    --leaf-dark:#278a54;
+    --ink:#08262d;
+    --white:#fffdf6;
+    --purple:#8a6fd1;
+    --purple-dark:#6b52ad;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, var(--sea-light) 0%, var(--sea-mid) 45%, var(--sea-deep) 100%);
+    color:var(--ink);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+  .waves{
+    position:fixed; left:0; right:0; bottom:0; height:120px; z-index:0; pointer-events:none;
+    opacity:0.55;
+  }
+  #app{
+    position:relative; z-index:1;
+    max-width:920px;
+    margin:0 auto;
+    padding:20px 16px 60px;
+    min-height:100vh;
+  }
+  h1,h2,h3{font-family:'Baloo 2',cursive; margin:0;}
+  button{font-family:'Nunito',sans-serif; cursor:pointer; border:none; outline:none;}
+  button:focus-visible, .focusable:focus-visible{
+    outline:3px solid #fff;
+    outline-offset:3px;
+  }
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px; flex-wrap:wrap; gap:8px;
+  }
+  .pill{
+    background:rgba(255,255,255,0.12);
+    border:2px solid rgba(255,255,255,0.25);
+    border-radius:999px;
+    padding:8px 16px;
+    display:flex; align-items:center; gap:8px;
+    color:var(--sand-light);
+    font-weight:800;
+    font-size:1.05rem;
+  }
+  .backbtn{
+    background:rgba(255,255,255,0.14);
+    border:2px solid rgba(255,255,255,0.3);
+    color:var(--white);
+    border-radius:999px;
+    padding:10px 18px;
+    font-weight:800;
+    font-size:1rem;
+    transition:transform .12s ease, background .12s ease;
+  }
+  .backbtn:hover{background:rgba(255,255,255,0.24); transform:translateY(-1px);}
+  .backbtn:active{transform:translateY(1px);}
+
+  /* ---------- MAP SCREEN ---------- */
+  .hero{
+    text-align:center;
+    margin:8px 0 26px;
+  }
+  .hero h1{
+    color:var(--sand-light);
+    font-size:2.4rem;
+    letter-spacing:0.5px;
+    text-shadow:0 3px 0 rgba(0,0,0,0.25);
+  }
+  .hero p{
+    color:rgba(255,255,255,0.75);
+    font-weight:700;
+    margin-top:6px;
+    font-size:1.05rem;
+  }
+
+  .islands{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:18px;
+    margin-top:10px;
+    max-width:640px;
+    margin-left:auto;
+    margin-right:auto;
+  }
+  @media (max-width:640px){
+    .islands{grid-template-columns:repeat(2, 1fr); max-width:none;}
+  }
+
+  .island{
+    position:relative;
+    background:radial-gradient(circle at 35% 30%, #ffe9b0, var(--sand) 60%, #e9c878 100%);
+    border-radius:50%;
+    aspect-ratio:1/1;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border:5px solid rgba(255,255,255,0.5);
+    box-shadow:0 8px 0 rgba(0,0,0,0.25), 0 14px 24px rgba(0,0,0,0.3);
+    transition:transform .15s ease, box-shadow .15s ease;
+    color:var(--ink);
+  }
+  .island .num{
+    font-family:'Baloo 2',cursive;
+    font-size:2.2rem;
+    font-weight:800;
+  }
+  .island .sub{
+    font-size:0.75rem;
+    font-weight:800;
+    color:#6b5322;
+    letter-spacing:0.5px;
+  }
+  .island .chest{
+    position:absolute;
+    top:-8px; right:2px;
+    font-size:1.5rem;
+    filter:drop-shadow(0 3px 2px rgba(0,0,0,0.35));
+  }
+  .island:not(.locked):hover{
+    transform:translateY(-6px) scale(1.03);
+    box-shadow:0 12px 0 rgba(0,0,0,0.25), 0 20px 30px rgba(0,0,0,0.35);
+  }
+  .island:not(.locked):active{
+    transform:translateY(0px) scale(0.99);
+  }
+  .island.locked{
+    filter:grayscale(0.6) brightness(0.75);
+    cursor:not-allowed;
+  }
+  .island.locked .num{opacity:0.6;}
+  .island.tier-bronze{box-shadow:0 8px 0 rgba(0,0,0,0.25), 0 0 0 4px #cd7f32 inset;}
+  .island.tier-silver{box-shadow:0 8px 0 rgba(0,0,0,0.25), 0 0 0 4px #c7cdd6 inset;}
+  .island.tier-gold{box-shadow:0 8px 0 rgba(0,0,0,0.25), 0 0 0 4px var(--gold) inset;}
+
+  /* ---------- SPLIT ISLANDS (order / shuffle) ---------- */
+  .island-pair{
+    position:relative;
+    display:flex;
+    border-radius:50%;
+    overflow:hidden;
+    aspect-ratio:1/1;
+    border:5px solid rgba(255,255,255,0.5);
+    box-shadow:0 8px 0 rgba(0,0,0,0.25), 0 14px 24px rgba(0,0,0,0.3);
+  }
+  .island-half{
+    flex:1 1 50%;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:1px;
+    color:var(--ink);
+    transition:filter .12s ease;
+    padding-top:16px;
+  }
+  .island-half.order{background:radial-gradient(circle at 30% 30%, #ffe9b0, var(--sand) 70%, #e9c878 100%);}
+  .island-half.shuffle{background:radial-gradient(circle at 70% 30%, #ffe0c0, #f0cf8e 70%, #dfb970 100%);}
+  .island-half:hover{filter:brightness(1.1);}
+  .island-half:active{filter:brightness(0.95);}
+  .island-half .icon{font-size:1rem; line-height:1;}
+  .island-half .chest-mini{line-height:0; margin:1px 0;}
+  .island-half .chest-mini svg{filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));}
+  .island-half .txt{font-size:0.6rem; font-weight:800; color:#6b5322; letter-spacing:0.2px;}
+  .island-half.tier-bronze{box-shadow:inset 0 0 0 3px #cd7f32;}
+  .island-half.tier-silver{box-shadow:inset 0 0 0 3px #c7cdd6;}
+  .island-half.tier-gold{box-shadow:inset 0 0 0 3px var(--gold);}
+  .island-pair .number-badge{
+    position:absolute; top:6px; left:50%; transform:translateX(-50%);
+    background:rgba(255,255,255,0.9);
+    border-radius:999px;
+    padding:1px 10px;
+    font-family:'Baloo 2',cursive;
+    font-weight:800;
+    font-size:0.85rem;
+    color:var(--ink);
+    z-index:2;
+    pointer-events:none;
+  }
+  .island-pair .divider{
+    position:absolute; left:50%; top:24%; bottom:12%; width:2px;
+    background:rgba(255,255,255,0.5);
+    transform:translateX(-50%);
+    z-index:1;
+    pointer-events:none;
+  }
+  .island-pair.locked .island-half{
+    filter:grayscale(0.6) brightness(0.75);
+    cursor:not-allowed;
+    pointer-events:none;
+  }
+  .legend-note{
+    text-align:center;
+    color:rgba(255,255,255,0.65);
+    font-weight:700;
+    font-size:0.85rem;
+    margin-top:14px;
+  }
+
+  .parrot-row{
+    display:flex; align-items:center; gap:14px;
+    margin-top:30px;
+    justify-content:center;
+  }
+  .parrot{
+    font-size:3rem;
+    animation:bob 3s ease-in-out infinite;
+    filter:drop-shadow(0 6px 4px rgba(0,0,0,0.3));
+  }
+  @keyframes bob{
+    0%,100%{transform:translateY(0) rotate(-2deg);}
+    50%{transform:translateY(-8px) rotate(2deg);}
+  }
+  .speech{
+    background:var(--white);
+    border-radius:18px;
+    padding:12px 18px;
+    font-weight:800;
+    max-width:420px;
+    position:relative;
+    box-shadow:0 6px 14px rgba(0,0,0,0.25);
+  }
+  .speech:after{
+    content:"";
+    position:absolute;
+    left:-14px; top:50%; transform:translateY(-50%);
+    border:10px solid transparent;
+    border-right-color:var(--white);
+  }
+
+  /* ---------- PLAY SCREEN ---------- */
+  .playbar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px; flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  .progress-dots{
+    display:flex; gap:6px;
+  }
+  .dot{
+    width:16px; height:16px; border-radius:50%;
+    background:rgba(255,255,255,0.25);
+    border:2px solid rgba(255,255,255,0.4);
+    transition:background .2s ease, transform .2s ease;
+  }
+  .dot.done-correct{background:var(--leaf); border-color:var(--leaf-dark); transform:scale(1.1);}
+  .dot.done-wrong{background:var(--coral); border-color:var(--coral-dark); transform:scale(1.1);}
+  .dot.current{box-shadow:0 0 0 3px rgba(255,255,255,0.5);}
+
+  .stage{
+    text-align:center;
+    margin-top:10px;
+  }
+  .parrot-speech-center{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    margin-bottom:18px;
+  }
+  .parrot-speech-center .parrot{font-size:2.6rem;}
+  .bubble{
+    background:var(--white);
+    padding:10px 20px;
+    border-radius:16px;
+    font-weight:800;
+    box-shadow:0 5px 12px rgba(0,0,0,0.22);
+    min-height:1.3em;
+  }
+
+  .question-card{
+    display:inline-block;
+    background:linear-gradient(160deg, var(--sand-light), var(--sand));
+    border:5px solid #fff;
+    border-radius:26px;
+    padding:26px 50px;
+    box-shadow:0 10px 0 rgba(0,0,0,0.25), 0 20px 30px rgba(0,0,0,0.3);
+    margin-bottom:32px;
+  }
+  .question-card .expr{
+    font-family:'Baloo 2',cursive;
+    font-weight:800;
+    font-size:3.2rem;
+    color:var(--ink);
+    letter-spacing:2px;
+  }
+
+  .timer-wrap{
+    width:260px;
+    max-width:70vw;
+    height:14px;
+    margin:0 auto 26px;
+    background:rgba(255,255,255,0.18);
+    border:2px solid rgba(255,255,255,0.3);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .timer-bar{
+    height:100%;
+    width:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg, var(--leaf), var(--gold));
+    animation:timerShrink linear forwards;
+  }
+  @keyframes timerShrink{
+    0%{width:100%; background:linear-gradient(90deg, var(--leaf), var(--gold));}
+    65%{background:linear-gradient(90deg, var(--gold), var(--gold));}
+    100%{width:0%; background:linear-gradient(90deg, var(--coral), var(--coral-dark));}
+  }
+
+  .answers{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(140px, 220px));
+    gap:20px;
+    justify-content:center;
+  }
+  @media (max-width:480px){
+    .answers{grid-template-columns:repeat(2, minmax(110px, 1fr)); gap:14px;}
+  }
+  .answer-btn{
+    font-family:'Baloo 2',cursive;
+    font-size:2rem;
+    font-weight:700;
+    color:var(--white);
+    padding:22px 10px;
+    border-radius:20px;
+    background:linear-gradient(160deg, var(--sea-light), var(--sea-mid));
+    border-bottom:8px solid #0a4a5f;
+    box-shadow:0 8px 18px rgba(0,0,0,0.3);
+    transition:transform .1s ease, filter .15s ease;
+  }
+  .answer-btn:hover{filter:brightness(1.08);}
+  .answer-btn:active{transform:translateY(4px); border-bottom-width:4px;}
+  .answer-btn:disabled{cursor:default;}
+  .answer-btn.correct{
+    background:linear-gradient(160deg, #57c98a, var(--leaf));
+    border-bottom-color:var(--leaf-dark);
+    animation:pop .35s ease;
+  }
+  .answer-btn.wrong{
+    background:linear-gradient(160deg, #ff8b7d, var(--coral));
+    border-bottom-color:var(--coral-dark);
+    animation:shake .35s ease;
+  }
+  .answer-btn.dim{opacity:0.45;}
+  @keyframes pop{
+    0%{transform:scale(1);}
+    40%{transform:scale(1.12);}
+    100%{transform:scale(1);}
+  }
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-8px);}
+    75%{transform:translateX(8px);}
+  }
+
+  .next-hint{
+    margin-top:22px;
+    color:rgba(255,255,255,0.7);
+    font-weight:700;
+    min-height:1.5em;
+  }
+  .next-btn{
+    font-family:'Baloo 2',cursive;
+    font-size:1.15rem;
+    font-weight:700;
+    color:var(--white);
+    padding:14px 36px;
+    border-radius:16px;
+    background:linear-gradient(160deg, #f6c463, var(--gold));
+    border-bottom:6px solid var(--gold-dark);
+    box-shadow:0 6px 14px rgba(0,0,0,0.28);
+    animation:popIn .25s ease;
+  }
+  .next-btn:active{transform:translateY(3px); border-bottom-width:3px;}
+  @keyframes popIn{
+    0%{transform:scale(0.8); opacity:0;}
+    100%{transform:scale(1); opacity:1;}
+  }
+
+  /* ---------- RESULTS SCREEN ---------- */
+  .results{
+    text-align:center;
+    margin-top:20px;
+  }
+  .chest-big{
+    display:flex;
+    justify-content:center;
+    margin:14px 0;
+    animation:chestpop .5s ease;
+    filter:drop-shadow(0 10px 10px rgba(0,0,0,0.35));
+  }
+  @keyframes chestpop{
+    0%{transform:scale(0.3) rotate(-10deg); opacity:0;}
+    60%{transform:scale(1.15) rotate(4deg); opacity:1;}
+    100%{transform:scale(1) rotate(0);}
+  }
+  .results h2{
+    color:var(--sand-light);
+    font-size:2rem;
+    text-shadow:0 3px 0 rgba(0,0,0,0.25);
+  }
+  .results .score-line{
+    color:var(--white);
+    font-weight:800;
+    font-size:1.3rem;
+    margin:10px 0;
+  }
+  .results .coin-line{
+    color:var(--gold);
+    font-weight:900;
+    font-size:1.15rem;
+    margin-bottom:22px;
+  }
+  .result-buttons{
+    display:flex; gap:16px; justify-content:center; flex-wrap:wrap;
+  }
+  .big-btn{
+    font-family:'Baloo 2',cursive;
+    font-size:1.2rem;
+    font-weight:700;
+    color:var(--white);
+    padding:16px 32px;
+    border-radius:16px;
+    box-shadow:0 6px 0 rgba(0,0,0,0.25);
+    transition:transform .1s ease;
+  }
+  .big-btn:active{transform:translateY(4px); box-shadow:0 2px 0 rgba(0,0,0,0.25);}
+  .btn-gold{background:linear-gradient(160deg, #f6c463, var(--gold)); border-bottom:6px solid var(--gold-dark);}
+  .btn-purple{background:linear-gradient(160deg, #a48be0, var(--purple)); border-bottom:6px solid var(--purple-dark);}
+
+  .streak-badge{
+    display:inline-flex; align-items:center; gap:4px;
+  }
+
+  /* confetti */
+  .confetti-piece{
+    position:fixed; top:-20px; z-index:50;
+    width:10px; height:16px;
+    opacity:0.9;
+    animation:fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(540deg); opacity:0.2; }
+  }
+
+  /* ---------- STATS SCREEN ---------- */
+  .stats-section{
+    background:rgba(255,255,255,0.08);
+    border:2px solid rgba(255,255,255,0.18);
+    border-radius:20px;
+    padding:18px 22px;
+    margin-bottom:20px;
+  }
+  .stats-section h3{
+    color:var(--sand-light);
+    font-size:1.3rem;
+    margin-bottom:14px;
+  }
+  .stats-summary{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(130px,1fr));
+    gap:12px;
+  }
+  .stats-num{
+    background:rgba(255,255,255,0.1);
+    border-radius:14px;
+    padding:12px 14px;
+    text-align:center;
+  }
+  .stats-num .val{
+    font-family:'Baloo 2',cursive;
+    font-size:1.7rem;
+    color:var(--white);
+    font-weight:800;
+    display:block;
+  }
+  .stats-num .lab{
+    color:rgba(255,255,255,0.65);
+    font-weight:700;
+    font-size:0.8rem;
+  }
+  .island-mini-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(150px,1fr));
+    gap:10px;
+  }
+  .island-mini{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(255,255,255,0.1);
+    border-radius:12px;
+    padding:10px 12px;
+    font-weight:800;
+    color:var(--white);
+    font-size:0.95rem;
+  }
+  .island-mini .chesticon{display:inline-flex; line-height:0;}
+  .island-mini .chesticon svg{filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));}
+  .island-mini-split{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+  }
+  .island-mini-label{
+    font-family:'Baloo 2',cursive;
+    font-size:1.05rem;
+  }
+  .island-mini-mode{
+    display:flex; align-items:center; gap:6px;
+    font-size:0.85rem;
+    font-weight:700;
+    color:rgba(255,255,255,0.9);
+  }
+  .island-mini-mode svg{filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));}
+  .worst-list{display:flex; flex-direction:column; gap:8px;}
+  .worst-fact-chip{
+    display:flex; align-items:center; justify-content:space-between;
+    background:rgba(255,111,94,0.15);
+    border:2px solid rgba(255,111,94,0.4);
+    border-radius:14px;
+    padding:10px 16px;
+    font-weight:800;
+    color:var(--white);
+  }
+  .worst-fact-chip .rank{color:rgba(255,255,255,0.55); margin-right:8px; font-size:0.85rem;}
+  .worst-fact-chip .count{
+    background:var(--coral);
+    color:white;
+    border-radius:999px;
+    padding:3px 12px;
+    font-size:0.85rem;
+    white-space:nowrap;
+  }
+  .empty-note{
+    color:rgba(255,255,255,0.75);
+    font-weight:700;
+    text-align:center;
+    padding:10px 0;
+  }
+
+  .mute-btn{
+    background:rgba(255,255,255,0.14);
+    border:2px solid rgba(255,255,255,0.3);
+    color:var(--white);
+    border-radius:999px;
+    width:44px; height:44px;
+    font-size:1.2rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0);
+  }
+</style>
+</head>
+<body>
+
+<svg class="waves" viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M0,60 C200,110 400,10 600,60 C800,110 1000,10 1200,60 L1200,120 L0,120 Z" fill="#0f5e78"></path>
+  <path d="M0,80 C200,40 400,120 600,80 C800,40 1000,120 1200,80 L1200,120 L0,120 Z" fill="#0a3441"></path>
+</svg>
+
+<div id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var TABLES = [3,4,5,6,7,8,9];
+  var QUESTIONS_PER_ISLAND = 10;
+  var TIME_LIMIT_MS = 5000;
+  var SAVE_KEY = 'rechen-piraten-save-v1';
+
+  // Speicher-Wrapper: nutzt die Artifact-Speicher-API, falls vorhanden,
+  // sonst localStorage als Fallback (z.B. bei lokal geöffneter Datei).
+  var Store = {
+    get: function(key){
+      if(typeof window.storage !== 'undefined' && window.storage && typeof window.storage.get === 'function'){
+        return window.storage.get(key, false)
+          .then(function(res){ return res ? res.value : null; })
+          .catch(function(){ return null; });
+      }
+      try{
+        return Promise.resolve(localStorage.getItem(key));
+      }catch(e){
+        return Promise.resolve(null);
+      }
+    },
+    set: function(key, value){
+      if(typeof window.storage !== 'undefined' && window.storage && typeof window.storage.set === 'function'){
+        return window.storage.set(key, value, false).catch(function(){
+          try{ localStorage.setItem(key, value); }catch(e){}
+        });
+      }
+      try{
+        localStorage.setItem(key, value);
+      }catch(e){}
+      return Promise.resolve();
+    }
+  };
+
+  var state = {
+    screen: 'map', // 'map' | 'play' | 'results'
+    coins: 0,
+    soundOn: true,
+    islandProgress: {}, // {3:{tier:0,best:0}, ... 'mixed':{tier:0,best:0}}
+    currentIsland: null,
+    currentMode: null,
+    questions: [],
+    qIndex: 0,
+    correctCount: 0,
+    streak: 0,
+    maxStreak: 0,
+    coinsThisRound: 0,
+    awaitingNext: false,
+    lastResultTier: 0,
+    mistakeCounts: {},   // key "aXb" -> {a,b,wrong,attempts}
+    totalAttempts: 0,
+    totalCorrect: 0,
+    bestStreakEver: 0,
+    timerId: null
+  };
+
+  TABLES.forEach(function(t){
+    state.islandProgress[t] = {
+      order:   {tier:0, best:0},
+      shuffle: {tier:0, best:0}
+    };
+  });
+  state.islandProgress['mixed'] = {tier:0, best:0};
+  state.islandProgress['storm'] = {tier:0, best:0};
+
+  var app = document.getElementById('app');
+
+  var PARROT_LINES = {
+    map: [
+      "Ahoi, Käpt'n! Welche Insel steuern wir an?",
+      "Jede Insel versteckt einen Schatz aus Zahlen!",
+      "Sammle goldene Truhen auf allen Inseln!"
+    ],
+    startPlay: [
+      "Los geht's! Welche Zahl passt?",
+      "Klick auf die richtige Antwort, Käpt'n!",
+      "Ich glaub an dich, Matrose!"
+    ],
+    correct: [
+      "Volltreffer! Weiter so!",
+      "Jawohl! Das war goldrichtig!",
+      "Genau richtig, Käpt'n!",
+      "Klasse gemacht!",
+      "Yohoho, das war stark!"
+    ],
+    wrong: [
+      "Fast! Beim nächsten Mal klappt's!",
+      "Kein Problem, weiter geht's!",
+      "Nicht schlimm – Piraten geben nicht auf!",
+      "Schau genau hin, du schaffst das!"
+    ],
+    streak3: "Drei in Folge! Du bist auf Kurs!",
+    streak5: "Fünf in Folge! Du glühst wie Gold!"
+  };
+
+  function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function shuffle(a){
+    var arr = a.slice();
+    for(var i=arr.length-1;i>0;i--){
+      var j = Math.floor(Math.random()*(i+1));
+      var tmp = arr[i]; arr[i]=arr[j]; arr[j]=tmp;
+    }
+    return arr;
+  }
+
+  // ---------- SOUND ----------
+  var audioCtx = null;
+  function beep(freqs, dur){
+    if(!state.soundOn) return;
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var t0 = audioCtx.currentTime;
+      freqs.forEach(function(f, i){
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(0.0001, t0 + i*0.09);
+        gain.gain.exponentialRampToValueAtTime(0.15, t0 + i*0.09 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + i*0.09 + dur);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(t0 + i*0.09);
+        osc.stop(t0 + i*0.09 + dur + 0.05);
+      });
+    }catch(e){}
+  }
+  function soundCorrect(){ beep([523.25, 659.25, 783.99], 0.18); }
+  function soundWrong(){ beep([220, 174.6], 0.22); }
+  function soundChest(){ beep([392,523.25,659.25,783.99,1046.5], 0.2); }
+
+  // ---------- QUESTION GENERATION ----------
+  function factKey(a,b){ return a+'x'+b; }
+
+  function recordAttempt(a, b, wasWrong){
+    var key = factKey(a,b);
+    if(!state.mistakeCounts[key]){
+      state.mistakeCounts[key] = {a:a, b:b, wrong:0, attempts:0};
+    }
+    state.mistakeCounts[key].attempts++;
+    if(wasWrong) state.mistakeCounts[key].wrong++;
+  }
+
+  function getWorstFacts(){
+    return Object.keys(state.mistakeCounts)
+      .map(function(k){ return state.mistakeCounts[k]; })
+      .filter(function(f){ return f.wrong > 0; })
+      .sort(function(x,y){ return (y.wrong - x.wrong) || (y.attempts - x.attempts); });
+  }
+
+  function makeQuestionSet(a, mode){
+    var multipliers;
+    if(a === 'mixed'){
+      multipliers = [];
+      for(var i=0;i<QUESTIONS_PER_ISLAND;i++){
+        multipliers.push({a: rand(TABLES), b: 1 + Math.floor(Math.random()*10)});
+      }
+    } else if(a === 'storm'){
+      var worst = getWorstFacts();
+      multipliers = [];
+      if(worst.length === 0){
+        // Noch keine Fehler gesammelt: knifflige Zufallsaufgaben als Ersatz
+        for(var j=0;j<QUESTIONS_PER_ISLAND;j++){
+          multipliers.push({a: rand(TABLES), b: 6 + Math.floor(Math.random()*5)});
+        }
+      } else {
+        var idx = 0;
+        while(multipliers.length < QUESTIONS_PER_ISLAND){
+          var f = worst[idx % worst.length];
+          multipliers.push({a:f.a, b:f.b});
+          idx++;
+        }
+        multipliers = shuffle(multipliers);
+      }
+    } else {
+      var bs = (mode === 'order') ? [1,2,3,4,5,6,7,8,9,10] : shuffle([1,2,3,4,5,6,7,8,9,10]);
+      multipliers = bs.map(function(b){ return {a:a, b:b}; });
+    }
+    return multipliers.map(function(pair){
+      return buildQuestion(pair.a, pair.b);
+    });
+  }
+
+  function buildQuestion(a, b){
+    var correct = a*b;
+    var pool = new Set();
+    var candidates = [
+      a*(b-1), a*(b+1), (a-1)*b, (a+1)*b,
+      correct + a, correct - a, correct + b, correct - b,
+      correct + 10, correct - 10, correct + 1, correct - 1
+    ];
+    candidates.forEach(function(c){
+      if(c > 0 && c !== correct && c <= 100) pool.add(c);
+    });
+    // ensure enough options; add random near-misses if pool too small
+    var tries = 0;
+    while(pool.size < 6 && tries < 30){
+      var delta = 1 + Math.floor(Math.random()*8);
+      var candidate = Math.random() < 0.5 ? correct + delta : correct - delta;
+      if(candidate > 0 && candidate !== correct) pool.add(candidate);
+      tries++;
+    }
+    var poolArr = shuffle(Array.from(pool));
+    var wrongs = poolArr.slice(0,3);
+    var options = shuffle(wrongs.concat([correct]));
+    return { a:a, b:b, correct:correct, options: options };
+  }
+
+  // ---------- RENDER: MAP ----------
+  var CHEST_COLORS = {
+    0: {light:'#a9764c', dark:'#6b4423'},  // unbeschlagene Holztruhe (noch nicht geschafft)
+    1: {light:'#e3a86c', dark:'#8a5a28'},  // Bronze
+    2: {light:'#e7ecf1', dark:'#8b93a1'},  // Silber
+    3: {light:'#f8d87c', dark:'#c68e22'}   // Gold
+  };
+  function chestSvg(tier, size){
+    var c = CHEST_COLORS[tier] || CHEST_COLORS[0];
+    size = size || 28;
+    var h = Math.round(size*0.8);
+    return '<svg width="'+size+'" height="'+h+'" viewBox="0 0 100 80" aria-hidden="true" focusable="false">'
+      + '<path d="M8 38 Q50 6 92 38 Z" fill="'+c.light+'" stroke="'+c.dark+'" stroke-width="5" stroke-linejoin="round"/>'
+      + '<rect x="8" y="36" width="84" height="34" rx="7" fill="'+c.light+'" stroke="'+c.dark+'" stroke-width="5"/>'
+      + '<rect x="43" y="10" width="14" height="60" fill="'+c.dark+'"/>'
+      + '<circle cx="50" cy="47" r="8" fill="'+c.dark+'"/>'
+      + '<rect x="46" y="47" width="8" height="11" fill="'+c.dark+'"/>'
+      + '</svg>';
+  }
+  function tierClass(tier){
+    if(tier === 3) return 'tier-gold';
+    if(tier === 2) return 'tier-silver';
+    if(tier === 1) return 'tier-bronze';
+    return '';
+  }
+
+  function allBaseIslandsHaveTier(minTier){
+    return TABLES.every(function(t){
+      var p = state.islandProgress[t];
+      return p.order.tier >= minTier && p.shuffle.tier >= minTier;
+    });
+  }
+
+  function islandLabelFor(island){
+    if(island === 'mixed') return 'Gemischte Insel';
+    if(island === 'storm') return 'Sturmklippen';
+    return island+'er Reihe';
+  }
+
+  function renderMap(){
+    var extrasLocked = !allBaseIslandsHaveTier(1);
+    var html = '';
+    html += '<div class="topbar">';
+    html += '  <div class="pill">🪙 <span>'+state.coins+'</span></div>';
+    html += '  <div style="display:flex; gap:8px;">';
+    html += '    <button class="backbtn" onclick="RP.goStats()">📊 Statistik</button>';
+    html += '    <button class="mute-btn" onclick="RP.toggleSound()" aria-label="Ton an/aus">'+(state.soundOn?'🔊':'🔇')+'</button>';
+    html += '  </div>';
+    html += '</div>';
+    html += '<div class="hero">';
+    html += '  <h1>🏴‍☠️ Rechen-Piraten</h1>';
+    html += '  <p>Die Schatzsuche im kleinen Einmaleins</p>';
+    html += '</div>';
+    html += '<div class="islands">';
+    TABLES.forEach(function(t){
+      var p = state.islandProgress[t];
+      html += '<div class="island-pair">';
+      html += '  <button class="island-half order '+tierClass(p.order.tier)+'" onclick="RP.startIsland('+t+',\'order\')" aria-label="'+t+'er Reihe der Reihe nach üben">';
+      html += '    <span class="icon">➡️</span>';
+      html += '    <span class="chest-mini">'+chestSvg(p.order.tier, 30)+'</span>';
+      html += '    <span class="txt">Reihe</span>';
+      html += '  </button>';
+      html += '  <button class="island-half shuffle '+tierClass(p.shuffle.tier)+'" onclick="RP.startIsland('+t+',\'shuffle\')" aria-label="'+t+'er Reihe gemischt üben">';
+      html += '    <span class="icon">🔀</span>';
+      html += '    <span class="chest-mini">'+chestSvg(p.shuffle.tier, 30)+'</span>';
+      html += '    <span class="txt">Mix</span>';
+      html += '  </button>';
+      html += '  <span class="divider"></span>';
+      html += '  <span class="number-badge">'+t+'er</span>';
+      html += '</div>';
+    });
+    var mp = state.islandProgress['mixed'];
+    html += '<button class="island '+tierClass(mp.tier)+' '+(extrasLocked?'locked':'')+'" '+(extrasLocked?'onclick="RP.lockedInfo(\'mixed\')"':'onclick="RP.startIsland(\'mixed\')"')+'>';
+    html += '  <span class="chest">'+(extrasLocked?'🔒':chestSvg(mp.tier, 30))+'</span>';
+    html += '  <span class="num" style="font-size:1.6rem;">Gemischt</span>';
+    html += '  <span class="sub">'+(extrasLocked?'Alle Inseln zuerst!':'Endlos-Insel')+'</span>';
+    html += '</button>';
+    var sp = state.islandProgress['storm'];
+    html += '<button class="island '+tierClass(sp.tier)+' '+(extrasLocked?'locked':'')+'" '+(extrasLocked?'onclick="RP.lockedInfo(\'storm\')"':'onclick="RP.startIsland(\'storm\')"')+'>';
+    html += '  <span class="chest">'+(extrasLocked?'🔒':chestSvg(sp.tier, 30))+'</span>';
+    html += '  <span class="num" style="font-size:1.4rem;">🌩️ Klippen</span>';
+    html += '  <span class="sub">'+(extrasLocked?'Alle Inseln zuerst!':'Deine Übungslücken')+'</span>';
+    html += '</button>';
+    html += '</div>';
+    html += '<div class="legend-note">➡️ = der Reihe nach üben &nbsp;·&nbsp; 🔀 = durcheinander üben</div>';
+    html += '<div class="parrot-row">';
+    html += '  <div class="parrot">🦜</div>';
+    html += '  <div class="speech">'+rand(PARROT_LINES.map)+'</div>';
+    html += '</div>';
+    app.innerHTML = html;
+  }
+
+  // ---------- RENDER: PLAY ----------
+  function renderPlay(opts){
+    opts = opts || {};
+    var q = state.questions[state.qIndex];
+    var dotsHtml = '';
+    for(var i=0;i<QUESTIONS_PER_ISLAND;i++){
+      var cls = 'dot';
+      if(i < state.qIndex){
+        cls += state.results && state.results[i] === false ? ' done-wrong' : ' done-correct';
+      } else if(i === state.qIndex){
+        cls += ' current';
+      }
+      dotsHtml += '<div class="'+cls+'"></div>';
+    }
+
+    var islandLabel = islandLabelFor(state.currentIsland);
+    var modeLabel = state.currentMode === 'order' ? ' · der Reihe nach' : (state.currentMode === 'shuffle' ? ' · gemischt' : '');
+
+    var html = '';
+    html += '<div class="playbar">';
+    html += '  <button class="backbtn" onclick="RP.goMap()">← Karte</button>';
+    html += '  <div class="pill">🪙 '+state.coins+'</div>';
+    html += '  <div class="pill">🔥 '+state.streak+'</div>';
+    html += '  <div class="progress-dots">'+dotsHtml+'</div>';
+    html += '</div>';
+
+    html += '<div class="stage">';
+    html += '  <div class="parrot-speech-center">';
+    html += '    <div class="parrot">🦜</div>';
+    html += '    <div class="bubble" id="parrotBubble">'+(opts.message || rand(PARROT_LINES.startPlay))+'</div>';
+    html += '  </div>';
+
+    html += '  <div style="font-weight:800;color:rgba(255,255,255,0.7);margin-bottom:6px;">'+islandLabel+modeLabel+' &middot; Frage '+(state.qIndex+1)+' / '+QUESTIONS_PER_ISLAND+'</div>';
+
+    html += '  <div class="question-card"><div class="expr">'+q.a+' &times; '+q.b+' = ?</div></div>';
+
+    html += '  <div class="timer-wrap"><div class="timer-bar" id="timerBar"></div></div>';
+
+    html += '  <div class="answers" id="answersRow">';
+    q.options.forEach(function(opt, idx){
+      html += '<button class="answer-btn" data-value="'+opt+'" onclick="RP.answer('+opt+', this)">'+opt+'</button>';
+    });
+    html += '  </div>';
+
+    html += '  <div class="next-hint" id="nextHint"></div>';
+    html += '</div>';
+
+    app.innerHTML = html;
+
+    var bar = document.getElementById('timerBar');
+    if(bar){ bar.style.animationDuration = (TIME_LIMIT_MS/1000)+'s'; }
+    startQuestionTimer();
+  }
+
+  function startQuestionTimer(){
+    clearTimeout(state.timerId);
+    state.timerId = setTimeout(function(){
+      handleTimeout();
+    }, TIME_LIMIT_MS);
+  }
+
+  function pauseTimerBar(){
+    var bar = document.getElementById('timerBar');
+    if(bar){
+      var currentWidth = getComputedStyle(bar).width;
+      bar.style.animation = 'none';
+      bar.style.width = currentWidth;
+    }
+  }
+
+  function handleTimeout(){
+    if(state.screen !== 'play' || state.awaitingNext) return;
+    var q = state.questions[state.qIndex];
+    state.results = state.results || [];
+    state.results[state.qIndex] = false;
+    state.awaitingNext = true;
+
+    recordAttempt(q.a, q.b, true);
+    state.totalAttempts++;
+    state.streak = 0;
+
+    var allBtns = document.querySelectorAll('#answersRow .answer-btn');
+    allBtns.forEach(function(b){
+      var v = parseInt(b.getAttribute('data-value'),10);
+      if(v === q.correct){
+        b.classList.add('correct');
+      } else {
+        b.classList.add('dim');
+      }
+      b.disabled = true;
+    });
+    pauseTimerBar();
+
+    var bubble = document.getElementById('parrotBubble');
+    var hint = document.getElementById('nextHint');
+    soundWrong();
+    if(bubble) bubble.textContent = 'Die Zeit ist um! Richtig war '+q.correct+'.';
+    if(hint) hint.innerHTML = renderNextButtonHtml();
+  }
+
+  function renderNextButtonHtml(){
+    var label = state.qIndex < QUESTIONS_PER_ISLAND-1 ? 'Weiter ➜' : 'Truhe öffnen 🏆';
+    return '<button class="next-btn" onclick="RP.nextQuestion()">'+label+'</button>';
+  }
+
+  function nextQuestion(){
+    if(state.screen !== 'play') return;
+    saveGame();
+    state.qIndex++;
+    state.awaitingNext = false;
+    if(state.qIndex >= QUESTIONS_PER_ISLAND){
+      finishIsland();
+    } else {
+      renderPlay();
+    }
+  }
+
+  function answer(value, btnEl){
+    if(state.awaitingNext) return;
+    clearTimeout(state.timerId);
+    var q = state.questions[state.qIndex];
+    var isCorrect = value === q.correct;
+    state.results = state.results || [];
+    state.results[state.qIndex] = isCorrect;
+    state.awaitingNext = true;
+
+    recordAttempt(q.a, q.b, !isCorrect);
+    state.totalAttempts++;
+    if(isCorrect) state.totalCorrect++;
+
+    var allBtns = document.querySelectorAll('#answersRow .answer-btn');
+    allBtns.forEach(function(b){
+      var v = parseInt(b.getAttribute('data-value'),10);
+      if(v === q.correct){
+        b.classList.add('correct');
+      } else if(b === btnEl){
+        b.classList.add('wrong');
+      } else {
+        b.classList.add('dim');
+      }
+      b.disabled = true;
+    });
+    pauseTimerBar();
+
+    var bubble = document.getElementById('parrotBubble');
+    var hint = document.getElementById('nextHint');
+
+    if(isCorrect){
+      soundCorrect();
+      state.correctCount++;
+      state.streak++;
+      if(state.streak > state.maxStreak) state.maxStreak = state.streak;
+      if(state.streak > state.bestStreakEver) state.bestStreakEver = state.streak;
+      var earn = 10;
+      var msg = rand(PARROT_LINES.correct);
+      if(state.streak > 0 && state.streak % 5 === 0){
+        earn += 15;
+        msg = PARROT_LINES.streak5;
+      } else if(state.streak > 0 && state.streak % 3 === 0){
+        earn += 5;
+        msg = PARROT_LINES.streak3;
+      }
+      state.coins += earn;
+      state.coinsThisRound += earn;
+      if(bubble) bubble.textContent = msg;
+      updateCoinPill();
+    } else {
+      soundWrong();
+      state.streak = 0;
+      if(bubble) bubble.textContent = rand(PARROT_LINES.wrong) + ' Richtig war '+q.correct+'.';
+    }
+
+    if(hint) hint.innerHTML = renderNextButtonHtml();
+  }
+
+  function updateCoinPill(){
+    var pills = document.querySelectorAll('.pill');
+    if(pills[0]) pills[0].innerHTML = '🪙 '+state.coins;
+    if(pills[1]) pills[1].innerHTML = '🔥 '+state.streak;
+  }
+
+  // ---------- RESULTS ----------
+  function tierFromScore(correct){
+    if(correct >= 10) return 3;
+    if(correct >= 8) return 2;
+    if(correct >= 6) return 1;
+    return 0;
+  }
+
+  function getProgressRecord(island, mode){
+    if(island === 'mixed' || island === 'storm') return state.islandProgress[island];
+    var modeKey = mode === 'order' ? 'order' : 'shuffle';
+    return state.islandProgress[island][modeKey];
+  }
+
+  function finishIsland(){
+    clearTimeout(state.timerId);
+    var tier = tierFromScore(state.correctCount);
+    var prog = getProgressRecord(state.currentIsland, state.currentMode);
+    if(tier > prog.tier) prog.tier = tier;
+    if(state.correctCount > prog.best) prog.best = state.correctCount;
+    state.lastResultTier = tier;
+    state.screen = 'results';
+    saveGame();
+    renderResults();
+    if(tier === 3) launchConfetti();
+    if(tier > 0) soundChest();
+  }
+
+  function renderResults(){
+    var tier = state.lastResultTier;
+    var chestIcon = chestSvg(tier, 120);
+    var title, message;
+    if(tier === 3){ title = 'Goldene Truhe erobert!'; message = 'Perfekt! Du kennst diese Reihe im Schlaf!'; }
+    else if(tier === 2){ title = 'Silberne Truhe gefunden!'; message = 'Stark! Nur ein kleines Stück bis zum Gold.'; }
+    else if(tier === 1){ title = 'Bronzene Truhe entdeckt!'; message = 'Guter Fang! Übung macht den Meister-Piraten.'; }
+    else { title = 'Truhe bleibt verschlossen …'; message = 'Kein Problem – jeder Pirat übt mal! Versuch’s nochmal.'; }
+
+    var islandLabel = islandLabelFor(state.currentIsland);
+
+    var html = '';
+    html += '<div class="topbar"><div class="pill">🪙 '+state.coins+'</div><div></div></div>';
+    html += '<div class="results">';
+    html += '  <h2>'+title+'</h2>';
+    html += '  <div class="chest-big">'+chestIcon+'</div>';
+    html += '  <div class="score-line">'+islandLabel+': '+state.correctCount+' von '+QUESTIONS_PER_ISLAND+' richtig</div>';
+    html += '  <div class="coin-line">+ '+state.coinsThisRound+' Münzen verdient &middot; Bestserie 🔥 '+state.maxStreak+'</div>';
+    html += '  <p style="color:rgba(255,255,255,0.8);font-weight:700;max-width:420px;margin:0 auto 24px;">'+message+'</p>';
+    html += '  <div class="result-buttons">';
+    var retryArgs = "'"+state.currentIsland+"'" + (state.currentMode ? ",'"+state.currentMode+"'" : '');
+    html += '    <button class="big-btn btn-gold" onclick="RP.startIsland('+retryArgs+')">🔁 Nochmal versuchen</button>';
+    html += '    <button class="big-btn btn-purple" onclick="RP.goMap()">🗺️ Zur Karte</button>';
+    html += '  </div>';
+    html += '</div>';
+    app.innerHTML = html;
+  }
+
+  function launchConfetti(){
+    var colors = ['#eab039','#ff6f5e','#3fac71','#1a90b4','#8a6fd1','#ffffff'];
+    for(var i=0;i<40;i++){
+      (function(){
+        var el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left = (Math.random()*100)+'vw';
+        el.style.background = colors[Math.floor(Math.random()*colors.length)];
+        el.style.animationDuration = (2.2 + Math.random()*1.6)+'s';
+        el.style.animationDelay = (Math.random()*0.4)+'s';
+        el.style.borderRadius = Math.random() < 0.5 ? '50%' : '2px';
+        document.body.appendChild(el);
+        setTimeout(function(){ el.remove(); }, 4500);
+      })();
+    }
+  }
+
+  // ---------- STATS SCREEN ----------
+  function renderStats(){
+    var accuracy = state.totalAttempts > 0 ? Math.round((state.totalCorrect/state.totalAttempts)*100) : 0;
+    var worst = getWorstFacts().slice(0,5);
+
+    var html = '';
+    html += '<div class="topbar">';
+    html += '  <button class="backbtn" onclick="RP.goMap()">← Karte</button>';
+    html += '  <div class="pill">🪙 '+state.coins+'</div>';
+    html += '</div>';
+    html += '<div class="hero" style="margin-bottom:18px;">';
+    html += '  <h1 style="font-size:1.9rem;">📊 Deine Statistik</h1>';
+    html += '</div>';
+
+    html += '<div class="stats-section">';
+    html += '  <h3>Gesamt</h3>';
+    html += '  <div class="stats-summary">';
+    html += '    <div class="stats-num"><span class="val">'+state.totalAttempts+'</span><span class="lab">Aufgaben gelöst</span></div>';
+    html += '    <div class="stats-num"><span class="val">'+accuracy+'%</span><span class="lab">Richtig gesamt</span></div>';
+    html += '    <div class="stats-num"><span class="val">🔥 '+state.bestStreakEver+'</span><span class="lab">Beste Serie</span></div>';
+    html += '    <div class="stats-num"><span class="val">🪙 '+state.coins+'</span><span class="lab">Münzen gesammelt</span></div>';
+    html += '  </div>';
+    html += '</div>';
+
+    html += '<div class="stats-section">';
+    html += '  <h3>Deine Inseln</h3>';
+    html += '  <div class="island-mini-grid">';
+    TABLES.forEach(function(t){
+      var p = state.islandProgress[t];
+      html += '<div class="island-mini island-mini-split">';
+      html += '  <span class="island-mini-label">'+t+'er</span>';
+      html += '  <span class="island-mini-mode">'+chestSvg(p.order.tier, 20)+' ➡️ '+p.order.best+'/'+QUESTIONS_PER_ISLAND+'</span>';
+      html += '  <span class="island-mini-mode">'+chestSvg(p.shuffle.tier, 20)+' 🔀 '+p.shuffle.best+'/'+QUESTIONS_PER_ISLAND+'</span>';
+      html += '</div>';
+    });
+    var mp = state.islandProgress['mixed'];
+    html += '<div class="island-mini"><span class="chesticon">'+chestSvg(mp.tier, 22)+'</span> Gemischt ('+mp.best+'/'+QUESTIONS_PER_ISLAND+')</div>';
+    var sp = state.islandProgress['storm'];
+    html += '<div class="island-mini"><span class="chesticon">'+chestSvg(sp.tier, 22)+'</span> Klippen ('+sp.best+'/'+QUESTIONS_PER_ISLAND+')</div>';
+    html += '  </div>';
+    html += '</div>';
+
+    html += '<div class="stats-section">';
+    html += '  <h3>🌩️ Deine kniffligsten Aufgaben</h3>';
+    if(worst.length === 0){
+      html += '  <div class="empty-note">Noch keine Fehler gesammelt – weiter so, Käpt\'n!</div>';
+    } else {
+      html += '  <div class="worst-list">';
+      worst.forEach(function(f, i){
+        html += '<div class="worst-fact-chip"><span><span class="rank">'+(i+1)+'.</span>'+f.a+' &times; '+f.b+' = '+(f.a*f.b)+'</span><span class="count">'+f.wrong+'&times; falsch</span></div>';
+      });
+      html += '  </div>';
+    }
+    html += '</div>';
+
+    app.innerHTML = html;
+  }
+
+  function goStats(){
+    clearTimeout(state.timerId);
+    state.awaitingNext = false;
+    state.screen = 'stats';
+    renderStats();
+  }
+
+  // ---------- NAVIGATION ----------
+  function startIsland(island, mode){
+    clearTimeout(state.timerId);
+    state.currentIsland = island;
+    state.currentMode = mode || null;
+    state.questions = makeQuestionSet(island, mode);
+    state.qIndex = 0;
+    state.correctCount = 0;
+    state.streak = 0;
+    state.maxStreak = 0;
+    state.coinsThisRound = 0;
+    state.results = [];
+    state.awaitingNext = false;
+    state.screen = 'play';
+    renderPlay();
+  }
+
+  function goMap(){
+    clearTimeout(state.timerId);
+    state.awaitingNext = false;
+    state.screen = 'map';
+    renderMap();
+  }
+
+  function lockedInfo(which){
+    var bubbleHost = document.querySelector('.speech');
+    if(!bubbleHost) return;
+    if(which === 'storm'){
+      bubbleHost.textContent = 'Erst alle sieben Inseln erobern, dann zeigen dir die Sturmklippen deine kniffligsten Aufgaben!';
+    } else {
+      bubbleHost.textContent = 'Erst alle sieben Inseln erobern, dann öffnet sich die Gemischte Insel!';
+    }
+  }
+
+  function toggleSound(){
+    state.soundOn = !state.soundOn;
+    saveGame();
+    render();
+  }
+
+  function render(){
+    if(state.screen === 'map') renderMap();
+    else if(state.screen === 'play') renderPlay();
+    else if(state.screen === 'stats') renderStats();
+    else renderResults();
+  }
+
+  // ---------- SPEICHERSTAND ----------
+  function saveGame(){
+    var payload = {
+      coins: state.coins,
+      islandProgress: state.islandProgress,
+      mistakeCounts: state.mistakeCounts,
+      totalAttempts: state.totalAttempts,
+      totalCorrect: state.totalCorrect,
+      bestStreakEver: state.bestStreakEver,
+      soundOn: state.soundOn
+    };
+    try{
+      Store.set(SAVE_KEY, JSON.stringify(payload));
+    }catch(e){ /* Speichern fehlgeschlagen - Spiel läuft trotzdem weiter */ }
+  }
+
+  function renderLoading(){
+    app.innerHTML =
+      '<div class="hero" style="margin-top:100px;">' +
+      '  <h1>🏴‍☠️ Rechen-Piraten</h1>' +
+      '  <p>Dein Spielstand wird geladen …</p>' +
+      '</div>' +
+      '<div class="parrot-row"><div class="parrot">🦜</div></div>';
+  }
+
+  function loadGame(){
+    return Store.get(SAVE_KEY).then(function(raw){
+      if(!raw) return;
+      var saved;
+      try{ saved = JSON.parse(raw); }catch(e){ return; }
+      if(!saved) return;
+
+      if(typeof saved.coins === 'number') state.coins = saved.coins;
+      if(typeof saved.totalAttempts === 'number') state.totalAttempts = saved.totalAttempts;
+      if(typeof saved.totalCorrect === 'number') state.totalCorrect = saved.totalCorrect;
+      if(typeof saved.bestStreakEver === 'number') state.bestStreakEver = saved.bestStreakEver;
+      if(typeof saved.soundOn === 'boolean') state.soundOn = saved.soundOn;
+      if(saved.mistakeCounts && typeof saved.mistakeCounts === 'object'){
+        state.mistakeCounts = saved.mistakeCounts;
+      }
+      if(saved.islandProgress && typeof saved.islandProgress === 'object'){
+        Object.keys(state.islandProgress).forEach(function(key){
+          var s = saved.islandProgress[key];
+          if(!s) return;
+          if(key === 'mixed' || key === 'storm'){
+            if(typeof s.tier === 'number' && typeof s.best === 'number'){
+              state.islandProgress[key] = { tier: s.tier, best: s.best };
+            }
+          } else if(s.order && s.shuffle){
+            // aktuelles Format: getrennter Fortschritt je Hälfte
+            if(typeof s.order.tier === 'number' && typeof s.order.best === 'number'){
+              state.islandProgress[key].order = { tier: s.order.tier, best: s.order.best };
+            }
+            if(typeof s.shuffle.tier === 'number' && typeof s.shuffle.best === 'number'){
+              state.islandProgress[key].shuffle = { tier: s.shuffle.tier, best: s.shuffle.best };
+            }
+          } else if(typeof s.tier === 'number' && typeof s.best === 'number'){
+            // älteres Speicherformat (vor der Insel-Teilung): auf "gemischt" übertragen
+            state.islandProgress[key].shuffle = { tier: s.tier, best: s.best };
+          }
+        });
+      }
+    }).catch(function(){ /* kein Speicherstand vorhanden - frisch starten */ });
+  }
+
+  window.RP = {
+    startIsland: startIsland,
+    answer: answer,
+    nextQuestion: nextQuestion,
+    goMap: goMap,
+    goStats: goStats,
+    lockedInfo: lockedInfo,
+    toggleSound: toggleSound
+  };
+
+  renderLoading();
+  loadGame().then(render);
+})();
+</script>
+</body>
+</html>
