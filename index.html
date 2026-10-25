@@ -104,9 +104,9 @@
   .islands{
     display:grid;
     grid-template-columns:repeat(3, 1fr);
-    gap:18px;
-    margin-top:10px;
-    max-width:640px;
+    gap:4px;
+    margin-top:6px;
+    max-width:680px;
     margin-left:auto;
     margin-right:auto;
   }
@@ -116,92 +116,108 @@
 
   .island{
     position:relative;
-    background:radial-gradient(circle at 35% 30%, #ffe9b0, var(--sand) 60%, #e9c878 100%);
-    border-radius:50%;
+    background:none;
+    border:none;
+    padding:0;
     aspect-ratio:1/1;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    border:5px solid rgba(255,255,255,0.5);
-    box-shadow:0 8px 0 rgba(0,0,0,0.25), 0 14px 24px rgba(0,0,0,0.3);
-    transition:transform .15s ease, box-shadow .15s ease;
+    gap:2px;
+    transition:transform .15s ease;
     color:var(--ink);
   }
+  .isle-svg{
+    position:absolute; inset:0; width:100%; height:100%;
+    overflow:visible;
+    filter:drop-shadow(0 8px 6px rgba(0,0,0,0.28));
+    pointer-events:none;
+  }
+  .island > span{position:relative; z-index:1;}
   .island .num{
     font-family:'Baloo 2',cursive;
-    font-size:2.2rem;
+    font-size:1.5rem;
     font-weight:800;
+    background:rgba(255,253,246,0.92);
+    padding:0 12px;
+    border-radius:999px;
+    line-height:1.3;
+    box-shadow:0 2px 4px rgba(0,0,0,0.2);
   }
   .island .sub{
-    font-size:0.75rem;
+    font-size:0.66rem;
     font-weight:800;
-    color:#6b5322;
-    letter-spacing:0.5px;
+    color:#5a431a;
+    background:rgba(255,253,246,0.82);
+    padding:0 8px;
+    border-radius:999px;
   }
   .island .chest{
-    position:absolute;
-    top:-8px; right:2px;
-    font-size:1.5rem;
+    line-height:0;
+    font-size:1.6rem;
+    margin-bottom:2px;
     filter:drop-shadow(0 3px 2px rgba(0,0,0,0.35));
   }
-  .island:not(.locked):hover{
-    transform:translateY(-6px) scale(1.03);
-    box-shadow:0 12px 0 rgba(0,0,0,0.25), 0 20px 30px rgba(0,0,0,0.35);
-  }
-  .island:not(.locked):active{
-    transform:translateY(0px) scale(0.99);
-  }
+  .island:not(.locked):hover{transform:translateY(-5px) scale(1.04);}
+  .island:not(.locked):active{transform:scale(0.98);}
   .island.locked{
-    filter:grayscale(0.6) brightness(0.75);
+    filter:grayscale(0.65) brightness(0.8);
     cursor:not-allowed;
   }
-  .island.locked .num{opacity:0.6;}
-  .island.tier-bronze{box-shadow:0 8px 0 rgba(0,0,0,0.25), 0 0 0 4px #cd7f32 inset;}
-  .island.tier-silver{box-shadow:0 8px 0 rgba(0,0,0,0.25), 0 0 0 4px #c7cdd6 inset;}
-  .island.tier-gold{box-shadow:0 8px 0 rgba(0,0,0,0.25), 0 0 0 4px var(--gold) inset;}
+  .island.locked .num{opacity:0.7;}
+  .island.tier-bronze .chest{filter:drop-shadow(0 0 6px #cd7f32);}
+  .island.tier-silver .chest{filter:drop-shadow(0 0 6px #e7ecf1);}
+  .island.tier-gold .chest{filter:drop-shadow(0 0 8px #f5c542);}
 
   /* ---------- SPLIT ISLANDS (order / shuffle) ---------- */
   .island-pair{
     position:relative;
-    display:flex;
-    border-radius:50%;
-    overflow:hidden;
     aspect-ratio:1/1;
-    border:5px solid rgba(255,255,255,0.5);
-    box-shadow:0 8px 0 rgba(0,0,0,0.25), 0 14px 24px rgba(0,0,0,0.3);
   }
   .island-half{
-    flex:1 1 50%;
+    position:absolute; top:0; bottom:0; width:50%;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:1px;
+    gap:2px;
+    background:none;
     color:var(--ink);
-    transition:filter .12s ease;
-    padding-top:16px;
+    padding:12% 0 0;
+    border-radius:40%;
+    transition:background .15s ease, transform .15s ease;
+    z-index:1;
   }
-  .island-half.order{background:radial-gradient(circle at 30% 30%, #ffe9b0, var(--sand) 70%, #e9c878 100%);}
-  .island-half.shuffle{background:radial-gradient(circle at 70% 30%, #ffe0c0, #f0cf8e 70%, #dfb970 100%);}
-  .island-half:hover{filter:brightness(1.1);}
-  .island-half:active{filter:brightness(0.95);}
+  .island-half.order{left:0;}
+  .island-half.shuffle{right:0;}
+  .island-half:hover{
+    background:radial-gradient(circle at 50% 58%, rgba(255,255,255,0.34), rgba(255,255,255,0) 66%);
+    transform:translateY(-3px);
+  }
+  .island-half:active{transform:scale(0.97);}
   .island-half .icon{font-size:1rem; line-height:1;}
-  .island-half .chest-mini{line-height:0; margin:1px 0;}
-  .island-half .chest-mini svg{filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));}
-  .island-half .txt{font-size:0.6rem; font-weight:800; color:#6b5322; letter-spacing:0.2px;}
-  .island-half.tier-bronze{box-shadow:inset 0 0 0 3px #cd7f32;}
-  .island-half.tier-silver{box-shadow:inset 0 0 0 3px #c7cdd6;}
-  .island-half.tier-gold{box-shadow:inset 0 0 0 3px var(--gold);}
+  .island-half .chest-mini{line-height:0;}
+  .island-half .chest-mini svg{filter:drop-shadow(0 2px 2px rgba(0,0,0,0.35));}
+  .island-half .txt{
+    font-size:0.6rem; font-weight:800; color:#5a431a;
+    background:rgba(255,253,246,0.86);
+    padding:0 7px; border-radius:999px;
+  }
+  .island-half.tier-bronze .chest-mini svg{filter:drop-shadow(0 0 5px #cd7f32);}
+  .island-half.tier-silver .chest-mini svg{filter:drop-shadow(0 0 5px #e7ecf1);}
+  .island-half.tier-gold .chest-mini svg{filter:drop-shadow(0 0 7px #f5c542);}
   .island-pair .number-badge{
-    position:absolute; top:6px; left:50%; transform:translateX(-50%);
-    background:rgba(255,255,255,0.9);
-    border-radius:999px;
-    padding:1px 10px;
+    position:absolute; top:3%; left:50%; transform:translateX(-50%);
+    background:linear-gradient(180deg,#a8743c,#7d5128);
+    border:2px solid #5a3a1a;
+    border-radius:8px;
+    padding:0 12px;
     font-family:'Baloo 2',cursive;
     font-weight:800;
-    font-size:0.85rem;
-    color:var(--ink);
+    font-size:0.95rem;
+    color:#fff1d0;
+    box-shadow:0 3px 0 rgba(0,0,0,0.25);
     z-index:2;
     pointer-events:none;
   }
   .island-pair .divider{
-    position:absolute; left:50%; top:24%; bottom:12%; width:2px;
-    background:rgba(255,255,255,0.5);
+    position:absolute; left:50%; top:32%; bottom:26%; width:0;
+    border-left:2px dashed rgba(255,255,255,0.6);
     transform:translateX(-50%);
     z-index:1;
     pointer-events:none;
@@ -619,6 +635,102 @@
   }
   .seg.active{background:var(--gold); color:var(--ink); border-color:var(--gold-dark);}
 
+  .timer-slider{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    margin-top:8px;
+    color:rgba(255,255,255,0.8);
+    font-weight:800;
+    font-size:0.85rem;
+  }
+  .timer-slider input[type=range]{
+    -webkit-appearance:none; appearance:none;
+    width:min(260px, 58vw); height:10px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.28);
+    outline:none;
+  }
+  .timer-slider input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; appearance:none;
+    width:30px; height:30px; border-radius:50%;
+    background:var(--gold); border:3px solid #fff;
+    box-shadow:0 3px 6px rgba(0,0,0,0.35); cursor:pointer;
+  }
+  .timer-slider input[type=range]::-moz-range-thumb{
+    width:24px; height:24px; border-radius:50%;
+    background:var(--gold); border:3px solid #fff;
+    box-shadow:0 3px 6px rgba(0,0,0,0.35); cursor:pointer;
+  }
+
+  /* ---------- AUFGABEN-LAYOUTS ---------- */
+  .stage{position:relative;}
+  .deco{position:fixed; inset:0; overflow:hidden; pointer-events:none; z-index:0;}
+  .stage > *:not(.deco){position:relative; z-index:1;}
+
+  /* Wellen */
+  .wv{position:absolute; left:0; bottom:0; width:200%; animation:waveDrift linear infinite;}
+  .wv path{fill:#fff;}
+  .wv.w1{height:150px; opacity:.2; animation-duration:12s;}
+  .wv.w2{height:115px; opacity:.28; animation-duration:8s; animation-direction:reverse;}
+  .wv.w3{height:80px; opacity:.4; animation-duration:5.5s;}
+  @keyframes waveDrift{from{transform:translateX(0);} to{transform:translateX(-50%);}}
+  .layout-wellen .question-card{background:linear-gradient(180deg,#f2fdff,#b9ecf8); border-color:#fff;}
+  .layout-wellen .question-card .expr{color:#0a4a5f;}
+  .layout-wellen .answer-btn:not(.correct):not(.wrong){background:linear-gradient(180deg,#ffffff,#d4f4fb); color:#0a4a5f; border-bottom-color:#7fd3e6;}
+
+  /* Kirschblüten */
+  .deco-kirsch{
+    background:
+      radial-gradient(ellipse at 50% -10%, rgba(255,170,205,0.55), rgba(255,170,205,0) 65%),
+      linear-gradient(180deg, rgba(255,214,230,0.16), rgba(255,214,230,0));
+  }
+  .petal{position:absolute; top:-24px; border-radius:150% 0 150% 0; opacity:.9; animation:petalFall linear infinite;}
+  @keyframes petalFall{
+    0%{transform:translate(0,0) rotate(0deg);}
+    50%{transform:translate(40px,55vh) rotate(180deg);}
+    100%{transform:translate(-20px,112vh) rotate(380deg);}
+  }
+  .layout-kirschbluete .question-card{background:linear-gradient(160deg,#fff7fb,#ffd3e5); border-color:#fff;}
+  .layout-kirschbluete .question-card .expr{color:#7a2b4f;}
+  .layout-kirschbluete .answer-btn:not(.correct):not(.wrong){background:linear-gradient(160deg,#ffb3d1,#e8709f); border-bottom-color:#b24774;}
+
+  /* Sternennacht */
+  .deco-sterne{background:linear-gradient(180deg, rgba(6,8,36,0.86), rgba(24,16,70,0.7));}
+  .star{position:absolute; border-radius:50%; background:#fff6c8; animation:twinkle ease-in-out infinite;}
+  @keyframes twinkle{0%,100%{opacity:.25; transform:scale(.8);} 50%{opacity:1; transform:scale(1.25);}}
+  .moon{position:absolute; top:70px; right:18px; width:56px; height:56px; filter:drop-shadow(0 0 12px rgba(255,240,170,.6));}
+  .layout-sternennacht .question-card{background:linear-gradient(160deg,#2a2a70,#14143c); border-color:var(--gold);}
+  .layout-sternennacht .question-card .expr{color:#ffe9a8;}
+  .layout-sternennacht .answer-btn:not(.correct):not(.wrong){background:linear-gradient(160deg,#7468d6,#3d3195); border-bottom-color:#241b66;}
+
+  /* Korallenriff */
+  .deco-riff{background:linear-gradient(180deg, rgba(0,70,90,0), rgba(0,110,130,0.38));}
+  .bub{position:absolute; bottom:-30px; border:2px solid rgba(255,255,255,.7); border-radius:50%; background:rgba(255,255,255,.12); animation:bubRise linear infinite;}
+  @keyframes bubRise{
+    0%{transform:translate(0,0); opacity:0;}
+    10%{opacity:.9;}
+    50%{transform:translate(14px,-55vh);}
+    100%{transform:translate(-8px,-115vh); opacity:.2;}
+  }
+  .fish{position:absolute; right:-12vw; font-size:1.8rem; animation:swim linear infinite;}
+  .fish.f1{top:38%; animation-duration:16s;}
+  .fish.f2{top:68%; font-size:1.4rem; animation-duration:22s; animation-delay:-9s;}
+  @keyframes swim{from{transform:translateX(0);} to{transform:translateX(-125vw);}}
+  .layout-riff .question-card{background:linear-gradient(160deg,#fff4dd,#ffc98f); border-color:#fff;}
+  .layout-riff .question-card .expr{color:#7a3b10;}
+  .layout-riff .answer-btn:not(.correct):not(.wrong){background:linear-gradient(160deg,#ffe58f,#f3b73c); color:#5b3a07; border-bottom-color:var(--gold-dark);}
+
+  /* Layout-Vorschau im Shop */
+  .lay-preview{
+    position:relative; width:100%; max-width:130px; height:84px;
+    border-radius:12px; border:3px solid rgba(255,255,255,0.5);
+    overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+  }
+  .lay-card{width:56%; height:22px; border-radius:7px;}
+  .lay-btns{display:grid; grid-template-columns:repeat(2,1fr); gap:4px; width:56%;}
+  .lay-btns i{height:9px; border-radius:4px; display:block;}
+  .lay-emoji{position:absolute; top:3px; right:6px; font-size:.9rem;}
+
   /* ---------- SHOP ---------- */
   .shop-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px;}
   .shop-card{
@@ -737,8 +849,8 @@
     timerRemaining: 0,
     timerStartedAt: 0,
     paused: false,
-    owned: { hats: ['none'], themes: ['standard'] },
-    equipped: { hat: 'none', theme: 'standard' },
+    owned: { hats: ['none'], themes: ['standard'], layouts: ['standard'] },
+    equipped: { hat: 'none', theme: 'standard', layout: 'standard' },
     shopMsg: ''
   };
 
@@ -794,25 +906,36 @@
   // ---------- SHOP-DATEN ----------
   var HAT_LIST = [
     {id:'none',     name:'Ohne Hut',      price:0},
-    {id:'stroh',    name:'Strohhut',      price:60},
-    {id:'party',    name:'Partyhut',      price:90},
-    {id:'kapitaen', name:'Kapitänsmütze', price:120},
-    {id:'pirat',    name:'Piratenhut',    price:150},
-    {id:'zylinder', name:'Zylinder',      price:200},
-    {id:'krone',    name:'Krone',         price:300}
+    {id:'stroh',    name:'Strohhut',      price:600},
+    {id:'party',    name:'Partyhut',      price:900},
+    {id:'kapitaen', name:'Kapitänsmütze', price:1200},
+    {id:'pirat',    name:'Piratenhut',    price:1500},
+    {id:'zylinder', name:'Zylinder',      price:2000},
+    {id:'krone',    name:'Krone',         price:3000}
   ];
   var THEME_LIST = [
     {id:'standard', name:'Tiefsee',         price:0,   deep:'#0a3441', mid:'#0f5e78', light:'#1a90b4'},
-    {id:'karibik',  name:'Karibik',         price:100, deep:'#0b4f5c', mid:'#12879a', light:'#3cc7c1'},
-    {id:'lagune',   name:'Smaragd-Lagune',  price:150, deep:'#0d3b2e', mid:'#1f7a5c', light:'#4cc38a'},
-    {id:'sonne',    name:'Sonnenuntergang', price:200, deep:'#3b1740', mid:'#9c3d67', light:'#d9667a'},
-    {id:'beeren',   name:'Beerenmeer',      price:250, deep:'#2a1650', mid:'#5a3d9a', light:'#9b7ede'}
+    {id:'karibik',  name:'Karibik',         price:1000, deep:'#0b4f5c', mid:'#12879a', light:'#3cc7c1'},
+    {id:'lagune',   name:'Smaragd-Lagune',  price:1500, deep:'#0d3b2e', mid:'#1f7a5c', light:'#4cc38a'},
+    {id:'sonne',    name:'Sonnenuntergang', price:2000, deep:'#3b1740', mid:'#9c3d67', light:'#d9667a'},
+    {id:'beeren',   name:'Beerenmeer',      price:2500, deep:'#2a1650', mid:'#5a3d9a', light:'#9b7ede'}
+  ];
+  var LAYOUT_LIST = [
+    {id:'standard',     name:'Schatzkarte',  price:0,    bg:'linear-gradient(180deg,#1a90b4,#0a3441)', card:'linear-gradient(160deg,#fdf3d8,#f6e0ac)', btn:'#1a90b4', emoji:'🗺️'},
+    {id:'wellen',       name:'Wellen',       price:1200, bg:'linear-gradient(180deg,#2aa8c9,#0f5e78)', card:'linear-gradient(180deg,#f2fdff,#b9ecf8)', btn:'#ffffff', emoji:'🌊'},
+    {id:'kirschbluete', name:'Kirschblüten', price:1800, bg:'linear-gradient(180deg,#f3a6c4,#a9577f)', card:'linear-gradient(160deg,#fff7fb,#ffd3e5)', btn:'#e8709f', emoji:'🌸'},
+    {id:'sternennacht', name:'Sternennacht', price:2400, bg:'linear-gradient(180deg,#0b0d3a,#2a1f6a)', card:'linear-gradient(160deg,#2a2a70,#14143c)', btn:'#7468d6', emoji:'⭐'},
+    {id:'riff',         name:'Korallenriff', price:3000, bg:'linear-gradient(180deg,#12a0b0,#0a5566)', card:'linear-gradient(160deg,#fff4dd,#ffc98f)', btn:'#f3b73c', emoji:'🐠'}
   ];
   function findById(list, id){
     for(var i=0;i<list.length;i++){ if(list[i].id === id) return list[i]; }
     return null;
   }
-  function ownedList(kind){ return kind === 'hat' ? state.owned.hats : state.owned.themes; }
+  function ownedList(kind){
+    if(kind === 'hat') return state.owned.hats;
+    if(kind === 'layout') return state.owned.layouts;
+    return state.owned.themes;
+  }
 
   function applyTheme(){
     var t = findById(THEME_LIST, state.equipped.theme) || THEME_LIST[0];
@@ -922,6 +1045,145 @@
     if(!hint) return;
     hint.innerHTML = feedbackExtrasHtml(q, isCorrect) + renderNextButtonHtml();
     try{ hint.scrollIntoView({block:'end', behavior:'smooth'}); }catch(e){}
+  }
+
+  // ---------- INSEL-GRAFIK ----------
+  function rng(seed){
+    var s = seed >>> 0;
+    return function(){
+      s = (s + 0x6D2B79F5) >>> 0;
+      var t = s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Geschlossene, weich geschwungene Form mit unregelmäßigem Rand
+  function blobPath(cx, cy, rx, ry, n, jit, rnd){
+    var pts = [], i;
+    for(i=0; i<n; i++){
+      var ang = (i/n) * Math.PI * 2;
+      var k = 1 - jit + rnd()*jit*2;
+      pts.push([cx + Math.cos(ang)*rx*k, cy + Math.sin(ang)*ry*k]);
+    }
+    var d = 'M'+pts[0][0].toFixed(1)+' '+pts[0][1].toFixed(1);
+    for(i=0; i<n; i++){
+      var p0 = pts[(i-1+n)%n], p1 = pts[i], p2 = pts[(i+1)%n], p3 = pts[(i+2)%n];
+      var c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
+      var c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
+      d += ' C'+c1x.toFixed(1)+' '+c1y.toFixed(1)+' '+c2x.toFixed(1)+' '+c2y.toFixed(1)+' '+p2[0].toFixed(1)+' '+p2[1].toFixed(1);
+    }
+    return d + ' Z';
+  }
+
+  function palmSvg(x, y, lean, scale){
+    var tx = lean*20, ty = -34, leaves = '';
+    [-165,-130,-95,-60,-25,10].forEach(function(a){
+      leaves += '<path d="M0 0 Q14 -13 30 2 Q15 -5 0 0Z" fill="#2fa05a" stroke="#1f7a43" stroke-width="1" transform="rotate('+a+')"/>';
+    });
+    var trunk = 'M0 0 Q'+(lean*4)+' -18 '+tx+' '+ty;
+    return '<g transform="translate('+x+' '+y+') scale('+scale+')">'
+      + '<ellipse cx="0" cy="2" rx="11" ry="3" fill="rgba(0,0,0,0.18)"/>'
+      + '<path d="'+trunk+'" stroke="#8a5a2b" stroke-width="5" fill="none" stroke-linecap="round"/>'
+      + '<path d="'+trunk+'" stroke="#c0884a" stroke-width="2" fill="none" stroke-linecap="round" stroke-dasharray="3 5"/>'
+      + '<g transform="translate('+tx+' '+ty+')">'+leaves
+      + '<circle cx="-3" cy="3" r="3" fill="#6b3f1d"/><circle cx="3" cy="4" r="3" fill="#6b3f1d"/></g></g>';
+  }
+
+  // kind: 'tropic' (Reihen-Inseln) | 'mixed' (Schatzinsel mit X) | 'storm' (Felsen & Gewitter)
+  function islandSvg(seed, kind){
+    var r = rng(seed*7919 + 13);
+    var land = blobPath(100, 100, 70, 63, 13, 0.14, r);
+    var veg  = blobPath(98, 98, 46, 40, 10, 0.16, r);
+    var id = 'i'+seed;
+    var storm = kind === 'storm';
+    var water = storm ? 'rgba(40,60,95,0.5)' : 'rgba(150,240,240,0.42)';
+    var s = '<svg class="isle-svg" viewBox="0 0 200 200" aria-hidden="true" focusable="false">';
+    s += '<defs>'
+      + '<radialGradient id="sd'+id+'" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#fff3cf"/><stop offset="1" stop-color="#e2bd70"/></radialGradient>'
+      + '<radialGradient id="gr'+id+'" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#86cf86"/><stop offset="1" stop-color="#3a8a50"/></radialGradient>'
+      + '<radialGradient id="rk'+id+'" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#b6bcc6"/><stop offset="1" stop-color="#6f7684"/></radialGradient>'
+      + '</defs>';
+    if(seed % 2 === 0) s += '<g transform="translate(200 0) scale(-1 1)">';
+    else s += '<g>';
+
+    // Wasser: weite Lagune, flaches Wasser, Schaumkante
+    s += '<g transform="translate(100 100) scale(1.34) translate(-100 -100)"><path d="'+land+'" fill="'+water+'" opacity="0.5"/></g>';
+    s += '<g transform="translate(100 100) scale(1.17) translate(-100 -100)">'
+      + '<path d="'+land+'" fill="'+water+'"/>'
+      + '<path d="'+land+'" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.6" stroke-dasharray="7 6"/></g>';
+    s += '<path d="'+land+'" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="7" stroke-linejoin="round"/>';
+
+    // Land
+    s += '<path d="'+land+'" fill="url(#'+(storm ? 'rk' : 'sd')+id+')" stroke="'+(storm ? '#5b6270' : '#d6b062')+'" stroke-width="2"/>';
+
+    if(storm){
+      s += '<path d="'+veg+'" fill="#6b7280" opacity="0.85"/>';
+      s += '<path d="M58 118 L68 82 L80 114 Z" fill="#4b5563"/>'
+         + '<path d="M104 124 L118 76 L132 120 Z" fill="#3f4753"/>'
+         + '<path d="M82 130 L90 104 L100 128 Z" fill="#59606e"/>';
+      s += '<g fill="#59607a"><ellipse cx="80" cy="30" rx="26" ry="14"/><ellipse cx="108" cy="25" rx="25" ry="15"/><ellipse cx="130" cy="33" rx="19" ry="11"/></g>';
+      s += '<path d="M106 40 l-9 19 h8 l-6 17 l17 -23 h-9 l7 -13z" fill="#ffd23f" stroke="#e0a800" stroke-width="1"/>';
+    } else {
+      s += '<path d="'+veg+'" fill="url(#gr'+id+')"/>';
+      for(var i=0; i<4; i++){
+        s += '<circle cx="'+(70+r()*52).toFixed(0)+'" cy="'+(76+r()*42).toFixed(0)+'" r="'+(4+r()*4).toFixed(0)+'" fill="#a6e0a0" opacity="0.5"/>';
+      }
+      var j = Math.round(r()*8) - 4;
+      s += palmSvg(58+j, 108, -1, 0.85);
+      s += palmSvg(142-j, 100, 1, 0.9);
+      if(kind !== 'mixed') s += palmSvg(118+j, 150, 0.6, 0.65);
+      if(kind === 'mixed'){
+        s += '<path d="M124 128 l14 14 m0 -14 l-14 14" stroke="#d62828" stroke-width="5" stroke-linecap="round"/>';
+      }
+    }
+    s += '</g></svg>';
+    return s;
+  }
+
+  // ---------- AUFGABEN-LAYOUT: DEKORATION ----------
+  function layoutDecoHtml(id){
+    var r = rng(77), i, h = '';
+    if(id === 'wellen'){
+      var wave = 'M0,100 Q180,30 360,100 T720,100 T1080,100 T1440,100 L1440,200 L0,200 Z';
+      h = '<div class="deco">';
+      ['w1','w2','w3'].forEach(function(c){
+        h += '<svg class="wv '+c+'" viewBox="0 0 1440 200" preserveAspectRatio="none"><path d="'+wave+'"/></svg>';
+      });
+      return h + '</div>';
+    }
+    if(id === 'kirschbluete'){
+      var pinks = ['#ffc2d9','#ff9ec4','#ffd9e8','#f78fb8'];
+      h = '<div class="deco deco-kirsch">';
+      for(i=0; i<18; i++){
+        var sz = 10 + Math.round(r()*10);
+        h += '<span class="petal" style="left:'+(r()*100).toFixed(0)+'%;width:'+sz+'px;height:'+sz+'px;'
+          + 'background:'+pinks[i%pinks.length]+';animation-duration:'+(7+r()*6).toFixed(1)+'s;animation-delay:-'+(r()*12).toFixed(1)+'s"></span>';
+      }
+      return h + '</div>';
+    }
+    if(id === 'sternennacht'){
+      h = '<div class="deco deco-sterne">';
+      for(i=0; i<34; i++){
+        var ss = 2 + Math.round(r()*2);
+        h += '<span class="star" style="left:'+(r()*100).toFixed(0)+'%;top:'+(r()*92).toFixed(0)+'%;width:'+ss+'px;height:'+ss+'px;'
+          + 'animation-duration:'+(2+r()*3).toFixed(1)+'s;animation-delay:-'+(r()*5).toFixed(1)+'s"></span>';
+      }
+      h += '<svg class="moon" viewBox="0 0 100 100"><path d="M62 8 A42 42 0 1 0 92 66 A34 34 0 1 1 62 8 Z" fill="#fff0a8"/></svg>';
+      return h + '</div>';
+    }
+    if(id === 'riff'){
+      h = '<div class="deco deco-riff">';
+      for(i=0; i<14; i++){
+        var bs = 8 + Math.round(r()*14);
+        h += '<span class="bub" style="left:'+(r()*100).toFixed(0)+'%;width:'+bs+'px;height:'+bs+'px;'
+          + 'animation-duration:'+(8+r()*7).toFixed(1)+'s;animation-delay:-'+(r()*12).toFixed(1)+'s"></span>';
+      }
+      h += '<span class="fish f1">🐠</span><span class="fish f2">🐟</span>';
+      return h + '</div>';
+    }
+    return '';
   }
 
   // ---------- SOUND ----------
@@ -1083,7 +1345,7 @@
     html += '<div class="islands">';
     TABLES.forEach(function(t){
       var p = state.islandProgress[t];
-      html += '<div class="island-pair">';
+      html += '<div class="island-pair">' + islandSvg(t, 'tropic');
       html += '  <button class="island-half order '+tierClass(p.order.tier)+'" onclick="RP.startIsland('+t+',\'order\')" aria-label="'+t+'er Reihe der Reihe nach üben">';
       html += '    <span class="icon">➡️</span>';
       html += '    <span class="chest-mini">'+chestSvg(p.order.tier, 30)+'</span>';
@@ -1100,23 +1362,25 @@
     });
     var mp = state.islandProgress['mixed'];
     html += '<button class="island '+tierClass(mp.tier)+' '+(extrasLocked?'locked':'')+'" '+(extrasLocked?'onclick="RP.lockedInfo(\'mixed\')"':'onclick="RP.startIsland(\'mixed\')"')+'>';
+    html += islandSvg(31, 'mixed');
     html += '  <span class="chest">'+(extrasLocked?'🔒':chestSvg(mp.tier, 30))+'</span>';
-    html += '  <span class="num" style="font-size:1.6rem;">Gemischt</span>';
+    html += '  <span class="num" style="font-size:1.2rem;">Gemischt</span>';
     html += '  <span class="sub">'+(extrasLocked?'Alle Inseln zuerst!':'Endlos-Insel')+'</span>';
     html += '</button>';
     var sp = state.islandProgress['storm'];
     html += '<button class="island '+tierClass(sp.tier)+' '+(extrasLocked?'locked':'')+'" '+(extrasLocked?'onclick="RP.lockedInfo(\'storm\')"':'onclick="RP.startIsland(\'storm\')"')+'>';
+    html += islandSvg(47, 'storm');
     html += '  <span class="chest">'+(extrasLocked?'🔒':chestSvg(sp.tier, 30))+'</span>';
-    html += '  <span class="num" style="font-size:1.4rem;">🌩️ Klippen</span>';
+    html += '  <span class="num" style="font-size:1.1rem;">Klippen</span>';
     html += '  <span class="sub">'+(extrasLocked?'Alle Inseln zuerst!':'Deine Übungslücken')+'</span>';
     html += '</button>';
     html += '</div>';
     html += '<div class="legend-note">➡️ = der Reihe nach üben &nbsp;·&nbsp; 🔀 = durcheinander üben</div>';
-    html += '<div class="timer-setting"><span>⏱️ Zeit pro Aufgabe:</span>';
-    [[5,'5 s'],[10,'10 s'],[0,'Aus']].forEach(function(o){
-      html += '<button class="seg'+(state.timerSeconds === o[0] ? ' active' : '')+'" onclick="RP.setTimer('+o[0]+')">'+o[1]+'</button>';
-    });
-    html += '</div>';
+    html += '<div class="timer-setting"><span>⏱️ Zeit pro Aufgabe:</span><strong id="timerLabel">'+timerLabel(state.timerSeconds)+'</strong></div>';
+    html += '<div class="timer-slider"><span>Aus</span>'
+      + '<input type="range" id="timerRange" min="0" max="10" step="1" value="'+state.timerSeconds+'" '
+      + 'oninput="RP.previewTimer(this.value)" onchange="RP.setTimer(this.value)" aria-label="Zeit pro Aufgabe in Sekunden">'
+      + '<span>10 s</span></div>';
     html += '<div class="parrot-row">';
     html += '  <div class="parrot">'+parrotSvg(84)+'</div>';
     html += '  <div class="speech">'+rand(PARROT_LINES.map)+'</div>';
@@ -1150,7 +1414,7 @@
     html += '  <div class="progress-dots">'+dotsHtml+'</div>';
     html += '</div>';
 
-    html += '<div class="stage">';
+    html += '<div class="stage layout-'+state.equipped.layout+'">' + layoutDecoHtml(state.equipped.layout);
     html += '  <div class="parrot-speech-center">';
     html += '    <div class="parrot">'+parrotSvg(72)+'</div>';
     html += '    <div class="bubble" id="parrotBubble">'+(opts.message || rand(PARROT_LINES.startPlay))+'</div>';
@@ -1521,9 +1785,16 @@
   function shopCardHtml(kind, item){
     var owned = ownedList(kind).indexOf(item.id) !== -1;
     var equipped = state.equipped[kind] === item.id;
-    var preview = kind === 'hat'
-      ? parrotSvg(80, item.id)
-      : '<div class="swatch" style="background:linear-gradient(160deg,'+item.light+','+item.mid+' 60%,'+item.deep+')"></div>';
+    var preview;
+    if(kind === 'hat'){
+      preview = parrotSvg(80, item.id);
+    } else if(kind === 'layout'){
+      preview = '<div class="lay-preview" style="background:'+item.bg+'"><span class="lay-emoji">'+item.emoji+'</span>'
+        + '<div class="lay-card" style="background:'+item.card+'"></div>'
+        + '<div class="lay-btns"><i style="background:'+item.btn+'"></i><i style="background:'+item.btn+'"></i><i style="background:'+item.btn+'"></i><i style="background:'+item.btn+'"></i></div></div>';
+    } else {
+      preview = '<div class="swatch" style="background:linear-gradient(160deg,'+item.light+','+item.mid+' 60%,'+item.deep+')"></div>';
+    }
     var act = 'onclick="RP.shopAction(\''+kind+'\',\''+item.id+'\')"';
     var btn;
     if(equipped){
@@ -1564,6 +1835,10 @@
     THEME_LIST.forEach(function(item){ html += shopCardHtml('theme', item); });
     html += '</div></div>';
 
+    html += '<div class="stats-section"><h3>🖼️ Aufgaben-Layouts</h3><div class="shop-grid">';
+    LAYOUT_LIST.forEach(function(item){ html += shopCardHtml('layout', item); });
+    html += '</div></div>';
+
     app.innerHTML = html;
   }
 
@@ -1576,7 +1851,7 @@
   }
 
   function shopAction(kind, id){
-    var list = kind === 'hat' ? HAT_LIST : THEME_LIST;
+    var list = kind === 'hat' ? HAT_LIST : (kind === 'layout' ? LAYOUT_LIST : THEME_LIST);
     var item = findById(list, id);
     if(!item) return;
     var owned = ownedList(kind);
@@ -1599,10 +1874,18 @@
     renderShop();
   }
 
-  function setTimer(sec){
+  function timerLabel(sec){ return sec <= 0 ? 'Aus' : sec+' s'; }
+
+  function previewTimer(v){
+    var el = document.getElementById('timerLabel');
+    if(el) el.textContent = timerLabel(parseInt(v, 10) || 0);
+  }
+
+  function setTimer(v){
+    var sec = Math.max(0, Math.min(10, parseInt(v, 10) || 0));
     state.timerSeconds = sec;
     saveGame();
-    renderMap();
+    previewTimer(sec);
   }
 
   function lockedInfo(which){
@@ -1672,8 +1955,8 @@
       if(saved.mistakeCounts && typeof saved.mistakeCounts === 'object'){
         state.mistakeCounts = saved.mistakeCounts;
       }
-      if(saved.timerSeconds === 0 || saved.timerSeconds === 5 || saved.timerSeconds === 10){
-        state.timerSeconds = saved.timerSeconds;
+      if(typeof saved.timerSeconds === 'number' && saved.timerSeconds >= 0 && saved.timerSeconds <= 10){
+        state.timerSeconds = Math.round(saved.timerSeconds);
       }
       function sanitizeOwned(arr, list, defaultId){
         var out = [defaultId];
@@ -1687,10 +1970,12 @@
       if(saved.owned && typeof saved.owned === 'object'){
         state.owned.hats = sanitizeOwned(saved.owned.hats, HAT_LIST, 'none');
         state.owned.themes = sanitizeOwned(saved.owned.themes, THEME_LIST, 'standard');
+        state.owned.layouts = sanitizeOwned(saved.owned.layouts, LAYOUT_LIST, 'standard');
       }
       if(saved.equipped && typeof saved.equipped === 'object'){
         if(state.owned.hats.indexOf(saved.equipped.hat) !== -1) state.equipped.hat = saved.equipped.hat;
         if(state.owned.themes.indexOf(saved.equipped.theme) !== -1) state.equipped.theme = saved.equipped.theme;
+        if(state.owned.layouts.indexOf(saved.equipped.layout) !== -1) state.equipped.layout = saved.equipped.layout;
       }
       if(saved.islandProgress && typeof saved.islandProgress === 'object'){
         Object.keys(state.islandProgress).forEach(function(key){
@@ -1728,6 +2013,7 @@
     goShop: goShop,
     shopAction: shopAction,
     setTimer: setTimer,
+    previewTimer: previewTimer,
     resumeTimer: resumeTimer
   };
 
