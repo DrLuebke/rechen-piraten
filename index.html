@@ -567,6 +567,97 @@
     display:flex; align-items:center; justify-content:center;
   }
 
+  /* ---------- RECHENHILFE / TAUSCHAUFGABE ---------- */
+  .hint-panel{
+    background:rgba(255,255,255,0.12);
+    border:2px solid rgba(255,255,255,0.28);
+    border-radius:18px;
+    padding:14px 18px;
+    max-width:420px;
+    margin:0 auto 12px;
+    text-align:left;
+    color:var(--white);
+  }
+  .hint-panel h4{
+    margin:0 0 8px;
+    font-family:'Baloo 2',cursive;
+    font-size:1.1rem;
+    color:var(--sand-light);
+  }
+  .hint-line{font-weight:800; padding:2px 0;}
+  .dot-array{display:grid; gap:4px; justify-content:center; margin:12px auto 4px;}
+  .dot-array i{width:12px; height:12px; border-radius:50%; display:block;}
+  .dot-array i.d1{background:var(--gold);}
+  .dot-array i.d2{background:#5fd0e8;}
+  .dot-array i.d3{background:transparent; border:2px dashed rgba(255,255,255,0.45);}
+  .dot-caption{text-align:center; font-size:0.8rem; color:rgba(255,255,255,0.7); font-weight:700;}
+  .swap-chip{
+    display:block; width:fit-content; max-width:92%;
+    margin:0 auto 12px;
+    background:rgba(255,255,255,0.14);
+    border-radius:999px;
+    padding:8px 16px;
+    font-weight:800;
+    color:var(--white);
+  }
+
+  /* ---------- TIMER-AUSWAHL ---------- */
+  .timer-setting{
+    display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;
+    margin-top:14px;
+    color:rgba(255,255,255,0.8);
+    font-weight:800;
+  }
+  .seg{
+    background:rgba(255,255,255,0.12);
+    border:2px solid rgba(255,255,255,0.3);
+    color:var(--white);
+    border-radius:999px;
+    padding:6px 16px;
+    font-weight:800;
+    font-size:0.95rem;
+  }
+  .seg.active{background:var(--gold); color:var(--ink); border-color:var(--gold-dark);}
+
+  /* ---------- SHOP ---------- */
+  .shop-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px;}
+  .shop-card{
+    background:rgba(255,255,255,0.1);
+    border:2px solid rgba(255,255,255,0.22);
+    border-radius:18px;
+    padding:12px;
+    text-align:center;
+    color:var(--white);
+  }
+  .shop-card.equipped{border-color:var(--gold); background:rgba(234,176,57,0.16);}
+  .shop-preview{display:flex; justify-content:center; align-items:center; min-height:84px; margin-bottom:6px;}
+  .swatch{width:84px; height:64px; border-radius:14px; border:3px solid rgba(255,255,255,0.5);}
+  .shop-name{font-family:'Baloo 2',cursive; font-weight:700; margin-bottom:8px;}
+  .shop-btn{
+    width:100%;
+    padding:10px 6px;
+    border-radius:12px;
+    font-weight:900;
+    font-size:0.9rem;
+    background:linear-gradient(160deg,#f6c463,var(--gold));
+    border-bottom:4px solid var(--gold-dark);
+    color:var(--ink);
+  }
+  .shop-btn.own{background:linear-gradient(160deg,#a48be0,var(--purple)); border-bottom-color:var(--purple-dark); color:#fff;}
+  .shop-btn.on{background:linear-gradient(160deg,#57c98a,var(--leaf)); border-bottom-color:var(--leaf-dark); color:#fff; cursor:default;}
+  .shop-btn.cant{background:rgba(255,255,255,0.15); border-bottom:4px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.75);}
+
+  /* ---------- PAUSE ---------- */
+  .pause-overlay{
+    position:fixed; inset:0; z-index:100;
+    background:rgba(6,30,38,0.95);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; text-align:center; padding:24px;
+    color:var(--white);
+  }
+  .pause-overlay h2{font-size:2rem; color:var(--sand-light);}
+  .pause-overlay p{font-weight:700; max-width:320px; margin:0;}
+
   @media (prefers-reduced-motion: reduce){
     *{animation:none !important; transition:none !important;}
   }
@@ -579,8 +670,8 @@
 <body>
 
 <svg class="waves" viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M0,60 C200,110 400,10 600,60 C800,110 1000,10 1200,60 L1200,120 L0,120 Z" fill="#0f5e78"></path>
-  <path d="M0,80 C200,40 400,120 600,80 C800,40 1000,120 1200,80 L1200,120 L0,120 Z" fill="#0a3441"></path>
+  <path d="M0,60 C200,110 400,10 600,60 C800,110 1000,10 1200,60 L1200,120 L0,120 Z" style="fill:var(--sea-mid)"></path>
+  <path d="M0,80 C200,40 400,120 600,80 C800,40 1000,120 1200,80 L1200,120 L0,120 Z" style="fill:var(--sea-deep)"></path>
 </svg>
 
 <div id="app"></div>
@@ -591,7 +682,7 @@
 
   var TABLES = [3,4,5,6,7,8,9];
   var QUESTIONS_PER_ISLAND = 10;
-  var TIME_LIMIT_MS = 5000;
+  var DEFAULT_TIMER_SECONDS = 5;
   var SAVE_KEY = 'rechen-piraten-save-v1';
 
   // Speicher-Wrapper: nutzt die Artifact-Speicher-API, falls vorhanden,
@@ -641,7 +732,14 @@
     totalAttempts: 0,
     totalCorrect: 0,
     bestStreakEver: 0,
-    timerId: null
+    timerId: null,
+    timerSeconds: DEFAULT_TIMER_SECONDS, // 5, 10 oder 0 (= aus)
+    timerRemaining: 0,
+    timerStartedAt: 0,
+    paused: false,
+    owned: { hats: ['none'], themes: ['standard'] },
+    equipped: { hat: 'none', theme: 'standard' },
+    shopMsg: ''
   };
 
   TABLES.forEach(function(t){
@@ -691,6 +789,139 @@
       var tmp = arr[i]; arr[i]=arr[j]; arr[j]=tmp;
     }
     return arr;
+  }
+
+  // ---------- SHOP-DATEN ----------
+  var HAT_LIST = [
+    {id:'none',     name:'Ohne Hut',      price:0},
+    {id:'stroh',    name:'Strohhut',      price:60},
+    {id:'party',    name:'Partyhut',      price:90},
+    {id:'kapitaen', name:'Kapitänsmütze', price:120},
+    {id:'pirat',    name:'Piratenhut',    price:150},
+    {id:'zylinder', name:'Zylinder',      price:200},
+    {id:'krone',    name:'Krone',         price:300}
+  ];
+  var THEME_LIST = [
+    {id:'standard', name:'Tiefsee',         price:0,   deep:'#0a3441', mid:'#0f5e78', light:'#1a90b4'},
+    {id:'karibik',  name:'Karibik',         price:100, deep:'#0b4f5c', mid:'#12879a', light:'#3cc7c1'},
+    {id:'lagune',   name:'Smaragd-Lagune',  price:150, deep:'#0d3b2e', mid:'#1f7a5c', light:'#4cc38a'},
+    {id:'sonne',    name:'Sonnenuntergang', price:200, deep:'#3b1740', mid:'#9c3d67', light:'#d9667a'},
+    {id:'beeren',   name:'Beerenmeer',      price:250, deep:'#2a1650', mid:'#5a3d9a', light:'#9b7ede'}
+  ];
+  function findById(list, id){
+    for(var i=0;i<list.length;i++){ if(list[i].id === id) return list[i]; }
+    return null;
+  }
+  function ownedList(kind){ return kind === 'hat' ? state.owned.hats : state.owned.themes; }
+
+  function applyTheme(){
+    var t = findById(THEME_LIST, state.equipped.theme) || THEME_LIST[0];
+    var root = document.documentElement.style;
+    root.setProperty('--sea-deep', t.deep);
+    root.setProperty('--sea-mid', t.mid);
+    root.setProperty('--sea-light', t.light);
+  }
+
+  var HAT_DRAW = {
+    none: '',
+    stroh:
+      '<ellipse cx="44" cy="22" rx="25" ry="6" fill="#e9c46a" stroke="#b58a2e" stroke-width="2"/>'
+      + '<path d="M32 22 Q32 6 44 6 Q56 6 56 22 Z" fill="#f4d58d" stroke="#b58a2e" stroke-width="2" stroke-linejoin="round"/>'
+      + '<rect x="32" y="16" width="24" height="4" fill="#e63946"/>',
+    party:
+      '<g transform="rotate(-12 44 22)">'
+      + '<path d="M33 23 L44 1 L55 23 Z" fill="#8a6fd1" stroke="#6b52ad" stroke-width="2" stroke-linejoin="round"/>'
+      + '<path d="M37 16 L51 16 M35 20 L53 20" stroke="#ffd166" stroke-width="2.5"/>'
+      + '<circle cx="44" cy="3" r="3.5" fill="#ffd166"/></g>',
+    kapitaen:
+      '<path d="M28 22 Q28 8 44 8 Q60 8 60 22 Z" fill="#ffffff" stroke="#b0bec5" stroke-width="2" stroke-linejoin="round"/>'
+      + '<rect x="28" y="17" width="32" height="5" fill="#1d3557"/>'
+      + '<path d="M26 23 Q44 31 62 23 L60 21 L28 21 Z" fill="#1d3557"/>'
+      + '<circle cx="44" cy="13" r="3" fill="#eab039"/>',
+    pirat:
+      '<path d="M14 27 Q28 24 34 12 Q44 3 54 12 Q60 24 74 27 Q44 33 14 27 Z" fill="#26262b" stroke="#000" stroke-width="1.5" stroke-linejoin="round"/>'
+      + '<path d="M16 27 Q44 33 72 27" stroke="#eab039" stroke-width="2" fill="none"/>'
+      + '<circle cx="44" cy="17" r="4" fill="#ffffff"/>'
+      + '<circle cx="42.6" cy="16.5" r="1" fill="#26262b"/><circle cx="45.4" cy="16.5" r="1" fill="#26262b"/>',
+    zylinder:
+      '<ellipse cx="44" cy="22" rx="21" ry="4.5" fill="#222"/>'
+      + '<rect x="32" y="3" width="24" height="19" rx="2" fill="#2b2b2e"/>'
+      + '<rect x="32" y="16" width="24" height="4" fill="#c1121f"/>'
+      + '<ellipse cx="44" cy="3.5" rx="12" ry="2.5" fill="#3a3a3d"/>',
+    krone:
+      '<path d="M30 24 L30 10 L37 17 L44 6 L51 17 L58 10 L58 24 Z" fill="#f8d87c" stroke="#c68e22" stroke-width="2" stroke-linejoin="round"/>'
+      + '<circle cx="37" cy="21" r="2" fill="#e63946"/><circle cx="44" cy="21" r="2" fill="#3a86ff"/><circle cx="51" cy="21" r="2" fill="#e63946"/>'
+  };
+
+  function parrotSvg(size, hatId){
+    hatId = hatId || state.equipped.hat;
+    var hat = HAT_DRAW[hatId] || '';
+    return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 100 100" aria-hidden="true" focusable="false">'
+      + '<path d="M60 80 Q78 98 92 94 Q86 82 72 66 Z" fill="#2b9ed6"/>'
+      + '<path d="M56 82 Q66 96 78 98 Q74 86 66 72 Z" fill="#ffd166"/>'
+      + '<ellipse cx="50" cy="66" rx="25" ry="27" fill="#e8433b"/>'
+      + '<ellipse cx="42" cy="72" rx="12" ry="17" fill="#ffd166"/>'
+      + '<ellipse cx="64" cy="66" rx="10" ry="19" fill="#2b9ed6" transform="rotate(-12 64 66)"/>'
+      + '<path d="M40 92 v6 M50 92 v6" stroke="#c68e22" stroke-width="3" stroke-linecap="round"/>'
+      + '<circle cx="44" cy="36" r="19" fill="#e8433b"/>'
+      + '<ellipse cx="38" cy="35" rx="10" ry="9" fill="#fff"/>'
+      + '<circle cx="37" cy="35" r="4.5" fill="#1b1b1b"/>'
+      + '<circle cx="38.6" cy="33.4" r="1.5" fill="#fff"/>'
+      + '<path d="M27 36 Q13 38 17 51 Q28 49 34 42 Z" fill="#ffb703" stroke="#c68e22" stroke-width="2" stroke-linejoin="round"/>'
+      + hat
+      + '</svg>';
+  }
+
+  // ---------- RECHENHILFE ----------
+  function strategyFor(a, b){
+    var p = a*b;
+    switch(b){
+      case 1:  return [a+' × 1 = '+a+' (einmal die '+a+')'];
+      case 2:  return [a+' + '+a+' = '+p+' (verdoppeln)'];
+      case 3:  return [a+' × 2 = '+(2*a), (2*a)+' + '+a+' = '+p];
+      case 4:  return [a+' × 2 = '+(2*a), 'nochmal verdoppeln: '+(2*a)+' + '+(2*a)+' = '+p];
+      case 5:  return [a+' × 10 = '+(10*a), 'die Hälfte davon: '+p];
+      case 6:  return [a+' × 5 = '+(5*a), 'plus noch eine '+a+': '+(5*a)+' + '+a+' = '+p];
+      case 7:  return [a+' × 5 = '+(5*a), a+' × 2 = '+(2*a), (5*a)+' + '+(2*a)+' = '+p];
+      case 8:  return [a+' × 10 = '+(10*a), a+' × 2 = '+(2*a), (10*a)+' − '+(2*a)+' = '+p];
+      case 9:  return [a+' × 10 = '+(10*a), (10*a)+' − '+a+' = '+p];
+      default: return [a+' × 10: hänge eine Null an → '+p];
+    }
+  }
+
+  function dotArrayHtml(a, b){
+    var cols = b >= 8 ? 10 : b;
+    var h = '<div class="dot-array" style="grid-template-columns:repeat('+cols+',12px)">';
+    for(var r=0; r<a; r++){
+      for(var c=0; c<cols; c++){
+        var cls = c >= b ? 'd3' : (c < 5 ? 'd1' : 'd2');
+        h += '<i class="'+cls+'"></i>';
+      }
+    }
+    h += '</div><div class="dot-caption">'+a+' Zeilen &middot; '+b+' Spalten'+(b >= 8 ? ' (gestrichelt: fehlt bis 10)' : '')+'</div>';
+    return h;
+  }
+
+  function feedbackExtrasHtml(q, isCorrect){
+    var h = '';
+    if(!isCorrect){
+      h += '<div class="hint-panel"><h4>💡 So geht’s leichter: '+q.a+' &times; '+q.b+'</h4>';
+      strategyFor(q.a, q.b).forEach(function(line){
+        h += '<div class="hint-line">'+line+'</div>';
+      });
+      h += dotArrayHtml(q.a, q.b)+'</div>';
+    }
+    if(q.a !== q.b){
+      h += '<div class="swap-chip">🔁 Tauschaufgabe: '+q.b+' &times; '+q.a+' = '+q.correct+' – gleiche Lösung!</div>';
+    }
+    return h;
+  }
+
+  function showFeedback(q, isCorrect){
+    var hint = document.getElementById('nextHint');
+    if(!hint) return;
+    hint.innerHTML = feedbackExtrasHtml(q, isCorrect) + renderNextButtonHtml();
+    try{ hint.scrollIntoView({block:'end', behavior:'smooth'}); }catch(e){}
   }
 
   // ---------- SOUND ----------
@@ -840,6 +1071,7 @@
     html += '<div class="topbar">';
     html += '  <div class="pill">🪙 <span>'+state.coins+'</span></div>';
     html += '  <div style="display:flex; gap:8px;">';
+    html += '    <button class="backbtn" onclick="RP.goShop()">🛍️ Shop</button>';
     html += '    <button class="backbtn" onclick="RP.goStats()">📊 Statistik</button>';
     html += '    <button class="mute-btn" onclick="RP.toggleSound()" aria-label="Ton an/aus">'+(state.soundOn?'🔊':'🔇')+'</button>';
     html += '  </div>';
@@ -880,8 +1112,13 @@
     html += '</button>';
     html += '</div>';
     html += '<div class="legend-note">➡️ = der Reihe nach üben &nbsp;·&nbsp; 🔀 = durcheinander üben</div>';
+    html += '<div class="timer-setting"><span>⏱️ Zeit pro Aufgabe:</span>';
+    [[5,'5 s'],[10,'10 s'],[0,'Aus']].forEach(function(o){
+      html += '<button class="seg'+(state.timerSeconds === o[0] ? ' active' : '')+'" onclick="RP.setTimer('+o[0]+')">'+o[1]+'</button>';
+    });
+    html += '</div>';
     html += '<div class="parrot-row">';
-    html += '  <div class="parrot">🦜</div>';
+    html += '  <div class="parrot">'+parrotSvg(84)+'</div>';
     html += '  <div class="speech">'+rand(PARROT_LINES.map)+'</div>';
     html += '</div>';
     app.innerHTML = html;
@@ -915,7 +1152,7 @@
 
     html += '<div class="stage">';
     html += '  <div class="parrot-speech-center">';
-    html += '    <div class="parrot">🦜</div>';
+    html += '    <div class="parrot">'+parrotSvg(72)+'</div>';
     html += '    <div class="bubble" id="parrotBubble">'+(opts.message || rand(PARROT_LINES.startPlay))+'</div>';
     html += '  </div>';
 
@@ -923,7 +1160,11 @@
 
     html += '  <div class="question-card"><div class="expr">'+q.a+' &times; '+q.b+' = ?</div></div>';
 
-    html += '  <div class="timer-wrap"><div class="timer-bar" id="timerBar"></div></div>';
+    if(state.timerSeconds > 0){
+      html += '  <div class="timer-wrap"><div class="timer-bar" id="timerBar"></div></div>';
+    } else {
+      html += '  <div style="height:26px;"></div>';
+    }
 
     html += '  <div class="answers" id="answersRow">';
     q.options.forEach(function(opt, idx){
@@ -937,15 +1178,61 @@
     app.innerHTML = html;
 
     var bar = document.getElementById('timerBar');
-    if(bar){ bar.style.animationDuration = (TIME_LIMIT_MS/1000)+'s'; }
+    if(bar){ bar.style.animationDuration = state.timerSeconds+'s'; }
+    window.scrollTo(0, 0);
     startQuestionTimer();
   }
 
   function startQuestionTimer(){
     clearTimeout(state.timerId);
-    state.timerId = setTimeout(function(){
-      handleTimeout();
-    }, TIME_LIMIT_MS);
+    state.paused = false;
+    hidePauseOverlay();
+    if(state.timerSeconds <= 0){
+      state.timerRemaining = 0;
+      return;
+    }
+    state.timerRemaining = state.timerSeconds * 1000;
+    state.timerStartedAt = Date.now();
+    state.timerId = setTimeout(handleTimeout, state.timerRemaining);
+  }
+
+  function showPauseOverlay(){
+    if(document.getElementById('pauseOverlay')) return;
+    var el = document.createElement('div');
+    el.id = 'pauseOverlay';
+    el.className = 'pause-overlay';
+    el.innerHTML =
+      '<div class="parrot">'+parrotSvg(90)+'</div>' +
+      '<h2>⏸️ Pause</h2>' +
+      '<p>Die Zeit steht still. Tippe auf „Weiter spielen“, wenn du bereit bist.</p>' +
+      '<button class="big-btn btn-gold" onclick="RP.resumeTimer()">▶ Weiter spielen</button>';
+    document.body.appendChild(el);
+  }
+
+  function hidePauseOverlay(){
+    var el = document.getElementById('pauseOverlay');
+    if(el) el.remove();
+  }
+
+  // Wird bei App-Wechsel / Fokusverlust aufgerufen
+  function pauseTimer(){
+    if(state.screen !== 'play' || state.awaitingNext || state.paused || state.timerSeconds <= 0) return;
+    clearTimeout(state.timerId);
+    state.timerRemaining = Math.max(0, state.timerRemaining - (Date.now() - state.timerStartedAt));
+    state.paused = true;
+    var bar = document.getElementById('timerBar');
+    if(bar) bar.style.animationPlayState = 'paused';
+    showPauseOverlay();
+  }
+
+  function resumeTimer(){
+    if(!state.paused) return;
+    state.paused = false;
+    hidePauseOverlay();
+    var bar = document.getElementById('timerBar');
+    if(bar) bar.style.animationPlayState = 'running';
+    state.timerStartedAt = Date.now();
+    state.timerId = setTimeout(handleTimeout, Math.max(50, state.timerRemaining));
   }
 
   function pauseTimerBar(){
@@ -958,7 +1245,7 @@
   }
 
   function handleTimeout(){
-    if(state.screen !== 'play' || state.awaitingNext) return;
+    if(state.screen !== 'play' || state.awaitingNext || state.paused) return;
     var q = state.questions[state.qIndex];
     state.results = state.results || [];
     state.results[state.qIndex] = false;
@@ -984,7 +1271,7 @@
     var hint = document.getElementById('nextHint');
     soundWrong();
     if(bubble) bubble.textContent = 'Die Zeit ist um! Richtig war '+q.correct+'.';
-    if(hint) hint.innerHTML = renderNextButtonHtml();
+    showFeedback(q, false);
   }
 
   function renderNextButtonHtml(){
@@ -1005,7 +1292,7 @@
   }
 
   function answer(value, btnEl){
-    if(state.awaitingNext) return;
+    if(state.awaitingNext || state.paused) return;
     clearTimeout(state.timerId);
     var q = state.questions[state.qIndex];
     var isCorrect = value === q.correct;
@@ -1059,7 +1346,7 @@
       if(bubble) bubble.textContent = rand(PARROT_LINES.wrong) + ' Richtig war '+q.correct+'.';
     }
 
-    if(hint) hint.innerHTML = renderNextButtonHtml();
+    showFeedback(q, isCorrect);
   }
 
   function updateCoinPill(){
@@ -1161,7 +1448,7 @@
     html += '    <div class="stats-num"><span class="val">'+state.totalAttempts+'</span><span class="lab">Aufgaben gelöst</span></div>';
     html += '    <div class="stats-num"><span class="val">'+accuracy+'%</span><span class="lab">Richtig gesamt</span></div>';
     html += '    <div class="stats-num"><span class="val">🔥 '+state.bestStreakEver+'</span><span class="lab">Beste Serie</span></div>';
-    html += '    <div class="stats-num"><span class="val">🪙 '+state.coins+'</span><span class="lab">Münzen gesammelt</span></div>';
+    html += '    <div class="stats-num"><span class="val">🪙 '+state.coins+'</span><span class="lab">Münzen im Beutel</span></div>';
     html += '  </div>';
     html += '</div>';
 
@@ -1230,6 +1517,94 @@
     renderMap();
   }
 
+  // ---------- SHOP ----------
+  function shopCardHtml(kind, item){
+    var owned = ownedList(kind).indexOf(item.id) !== -1;
+    var equipped = state.equipped[kind] === item.id;
+    var preview = kind === 'hat'
+      ? parrotSvg(80, item.id)
+      : '<div class="swatch" style="background:linear-gradient(160deg,'+item.light+','+item.mid+' 60%,'+item.deep+')"></div>';
+    var act = 'onclick="RP.shopAction(\''+kind+'\',\''+item.id+'\')"';
+    var btn;
+    if(equipped){
+      btn = '<button class="shop-btn on" disabled>✓ Angelegt</button>';
+    } else if(owned){
+      btn = '<button class="shop-btn own" '+act+'>Anlegen</button>';
+    } else if(state.coins >= item.price){
+      btn = '<button class="shop-btn" '+act+'>🪙 '+item.price+' kaufen</button>';
+    } else {
+      btn = '<button class="shop-btn cant" '+act+'>🪙 '+item.price+' · noch '+(item.price - state.coins)+'</button>';
+    }
+    return '<div class="shop-card'+(equipped ? ' equipped' : '')+'">'
+      + '<div class="shop-preview">'+preview+'</div>'
+      + '<div class="shop-name">'+item.name+'</div>'
+      + btn
+      + '</div>';
+  }
+
+  function renderShop(){
+    var html = '';
+    html += '<div class="topbar">';
+    html += '  <button class="backbtn" onclick="RP.goMap()">← Karte</button>';
+    html += '  <div class="pill">🪙 '+state.coins+'</div>';
+    html += '</div>';
+    html += '<div class="hero" style="margin-bottom:12px;">';
+    html += '  <h1 style="font-size:1.9rem;">🛍️ Piraten-Shop</h1>';
+    html += '</div>';
+    html += '<div class="parrot-row" style="margin:0 0 22px;">';
+    html += '  <div class="parrot">'+parrotSvg(84)+'</div>';
+    html += '  <div class="speech">'+(state.shopMsg || 'Gib deine Münzen aus, Käpt’n! Hüte für mich und neue Meeresfarben für dich.')+'</div>';
+    html += '</div>';
+
+    html += '<div class="stats-section"><h3>🎩 Hüte für den Papagei</h3><div class="shop-grid">';
+    HAT_LIST.forEach(function(item){ html += shopCardHtml('hat', item); });
+    html += '</div></div>';
+
+    html += '<div class="stats-section"><h3>🌊 Meeresfarben</h3><div class="shop-grid">';
+    THEME_LIST.forEach(function(item){ html += shopCardHtml('theme', item); });
+    html += '</div></div>';
+
+    app.innerHTML = html;
+  }
+
+  function goShop(){
+    clearTimeout(state.timerId);
+    state.awaitingNext = false;
+    state.shopMsg = '';
+    state.screen = 'shop';
+    renderShop();
+  }
+
+  function shopAction(kind, id){
+    var list = kind === 'hat' ? HAT_LIST : THEME_LIST;
+    var item = findById(list, id);
+    if(!item) return;
+    var owned = ownedList(kind);
+    if(owned.indexOf(id) === -1){
+      if(state.coins < item.price){
+        state.shopMsg = 'Dir fehlen noch '+(item.price - state.coins)+' Münzen für „'+item.name+'“. Sammle weiter, Käpt’n!';
+        renderShop();
+        return;
+      }
+      state.coins -= item.price;
+      owned.push(id);
+      soundChest();
+      state.shopMsg = 'Gekauft: '+item.name+'! Das steht uns richtig gut!';
+    } else {
+      state.shopMsg = 'Angelegt: '+item.name+'.';
+    }
+    state.equipped[kind] = id;
+    if(kind === 'theme') applyTheme();
+    saveGame();
+    renderShop();
+  }
+
+  function setTimer(sec){
+    state.timerSeconds = sec;
+    saveGame();
+    renderMap();
+  }
+
   function lockedInfo(which){
     var bubbleHost = document.querySelector('.speech');
     if(!bubbleHost) return;
@@ -1250,6 +1625,7 @@
     if(state.screen === 'map') renderMap();
     else if(state.screen === 'play') renderPlay();
     else if(state.screen === 'stats') renderStats();
+    else if(state.screen === 'shop') renderShop();
     else renderResults();
   }
 
@@ -1262,7 +1638,10 @@
       totalAttempts: state.totalAttempts,
       totalCorrect: state.totalCorrect,
       bestStreakEver: state.bestStreakEver,
-      soundOn: state.soundOn
+      soundOn: state.soundOn,
+      timerSeconds: state.timerSeconds,
+      owned: state.owned,
+      equipped: state.equipped
     };
     try{
       Store.set(SAVE_KEY, JSON.stringify(payload));
@@ -1292,6 +1671,26 @@
       if(typeof saved.soundOn === 'boolean') state.soundOn = saved.soundOn;
       if(saved.mistakeCounts && typeof saved.mistakeCounts === 'object'){
         state.mistakeCounts = saved.mistakeCounts;
+      }
+      if(saved.timerSeconds === 0 || saved.timerSeconds === 5 || saved.timerSeconds === 10){
+        state.timerSeconds = saved.timerSeconds;
+      }
+      function sanitizeOwned(arr, list, defaultId){
+        var out = [defaultId];
+        if(Array.isArray(arr)){
+          arr.forEach(function(id){
+            if(findById(list, id) && out.indexOf(id) === -1) out.push(id);
+          });
+        }
+        return out;
+      }
+      if(saved.owned && typeof saved.owned === 'object'){
+        state.owned.hats = sanitizeOwned(saved.owned.hats, HAT_LIST, 'none');
+        state.owned.themes = sanitizeOwned(saved.owned.themes, THEME_LIST, 'standard');
+      }
+      if(saved.equipped && typeof saved.equipped === 'object'){
+        if(state.owned.hats.indexOf(saved.equipped.hat) !== -1) state.equipped.hat = saved.equipped.hat;
+        if(state.owned.themes.indexOf(saved.equipped.theme) !== -1) state.equipped.theme = saved.equipped.theme;
       }
       if(saved.islandProgress && typeof saved.islandProgress === 'object'){
         Object.keys(state.islandProgress).forEach(function(key){
@@ -1325,11 +1724,24 @@
     goMap: goMap,
     goStats: goStats,
     lockedInfo: lockedInfo,
-    toggleSound: toggleSound
+    toggleSound: toggleSound,
+    goShop: goShop,
+    shopAction: shopAction,
+    setTimer: setTimer,
+    resumeTimer: resumeTimer
   };
 
+  // Timer pausieren, sobald die App in den Hintergrund geht oder den Fokus verliert
+  document.addEventListener('visibilitychange', function(){
+    if(document.hidden) pauseTimer();
+  });
+  window.addEventListener('blur', pauseTimer);
+
   renderLoading();
-  loadGame().then(render);
+  loadGame().then(function(){
+    applyTheme();
+    render();
+  });
 })();
 </script>
 </body>
