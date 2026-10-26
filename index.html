@@ -178,7 +178,7 @@
     gap:2px;
     background:none;
     color:var(--ink);
-    padding:12% 0 0;
+    padding:26% 0 0;
     border-radius:40%;
     transition:background .15s ease, transform .15s ease;
     z-index:1;
@@ -290,18 +290,30 @@
     margin-top:10px;
   }
   .parrot-speech-center{
-    display:flex; flex-direction:column; align-items:center; gap:8px;
-    margin-bottom:18px;
+    display:flex; flex-direction:row; align-items:center; justify-content:center; gap:10px;
+    margin:0 auto 10px;
+    max-width:520px;
   }
-  .parrot-speech-center .parrot{font-size:2.6rem;}
+  .parrot-speech-center .parrot{flex:none; line-height:0;}
   .bubble{
     background:var(--white);
-    padding:10px 20px;
+    padding:8px 14px;
     border-radius:16px;
     font-weight:800;
+    font-size:0.95rem;
+    text-align:left;
     box-shadow:0 5px 12px rgba(0,0,0,0.22);
-    min-height:1.3em;
+    min-height:2.6em;
+    display:flex; align-items:center;
+    flex:1;
   }
+  .play-label{
+    display:flex; justify-content:space-between; gap:6px; flex-wrap:wrap;
+    font-weight:800; font-size:0.8rem;
+    color:rgba(255,255,255,0.75);
+    max-width:520px; margin:0 auto 8px;
+  }
+  .timer-wrap.timer-off{background:none; border-color:transparent;}
 
   .question-card{
     display:inline-block;
@@ -601,8 +613,12 @@
     color:var(--sand-light);
   }
   .hint-line{font-weight:800; padding:2px 0;}
-  .dot-array{display:grid; gap:4px; justify-content:center; margin:12px auto 4px;}
-  .dot-array i{width:12px; height:12px; border-radius:50%; display:block;}
+  .hint-body{display:flex; gap:14px; align-items:center; justify-content:space-between;}
+  .hint-lines{flex:1; min-width:0;}
+  .dot-wrap{flex:none;}
+  .dot-array{--dot:12px; display:grid; grid-template-columns:repeat(var(--cols,5), var(--dot)); gap:4px; justify-content:center; margin:6px auto 4px;}
+  .dot-array i{width:var(--dot); height:var(--dot); border-radius:50%; display:block;}
+  .next-wrap{position:sticky; bottom:10px; z-index:5; padding-top:4px;}
   .dot-array i.d1{background:var(--gold);}
   .dot-array i.d2{background:#5fd0e8;}
   .dot-array i.d3{background:transparent; border:2px dashed rgba(255,255,255,0.45);}
@@ -789,6 +805,87 @@
   }
   .pause-overlay h2{font-size:2rem; color:var(--sand-light);}
   .pause-overlay p{font-weight:700; max-width:320px; margin:0;}
+
+  /* ---------- SMARTPHONE HOCHKANT ---------- */
+  @media (max-width:600px){
+    html{font-size:14px;}
+    #app{padding:8px 10px 14px;}
+    .topbar{margin-bottom:4px; gap:6px;}
+    .pill{padding:5px 11px; font-size:0.9rem;}
+    .backbtn{padding:6px 12px; font-size:0.9rem;}
+    .mute-btn{width:36px; height:36px; font-size:1rem;}
+    .hero{margin:2px 0 6px;}
+    .hero h1{font-size:1.7rem;}
+    .hero p{font-size:0.9rem; margin-top:2px;}
+    .islands{grid-template-columns:repeat(3, 1fr); max-width:none; gap:0; margin-top:0;}
+    .island-half .chest-mini svg{width:24px; height:auto;}
+    .island-half .icon{font-size:0.8rem;}
+    .island-half .txt{font-size:0.52rem; padding:0 5px;}
+    .island-pair .number-badge{font-size:0.75rem; padding:0 8px;}
+    .island .chest svg{width:26px; height:auto;}
+    .legend-note{margin-top:6px; font-size:0.75rem;}
+    .timer-setting{margin-top:8px;}
+    .parrot-row{margin-top:10px; gap:10px;}
+    .parrot-row .parrot svg{width:58px; height:58px;}
+    .speech{padding:8px 12px; font-size:0.9rem;}
+    .stats-section{padding:12px 14px; margin-bottom:12px;}
+    .shop-grid{grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:10px;}
+
+    /* Aufgaben-Screen: muss ohne Scrollen auf den Bildschirm passen */
+    .playbar{gap:6px 8px; margin-bottom:6px;}
+    .progress-dots{order:5; flex-basis:100%; justify-content:center; gap:4px;}
+    .dot{width:11px; height:11px; border-width:1px;}
+    .dot.current{box-shadow:0 0 0 2px rgba(255,255,255,0.5);}
+    .stage{margin-top:2px;}
+    .parrot-speech-center{margin-bottom:6px;}
+    .bubble{font-size:0.82rem; padding:6px 10px;}
+    .play-label{font-size:0.72rem; margin-bottom:6px;}
+    .question-card{
+      padding:clamp(8px,1.8vh,18px) 34px;
+      margin-bottom:clamp(6px,1.4vh,16px);
+      border-width:4px; border-radius:20px;
+      box-shadow:0 6px 0 rgba(0,0,0,0.25), 0 10px 18px rgba(0,0,0,0.28);
+    }
+    .question-card .expr{font-size:clamp(1.9rem, 6.2vh, 2.8rem); letter-spacing:1px;}
+    .timer-wrap{height:10px; margin-bottom:clamp(6px,1.4vh,14px);}
+    .answers{grid-template-columns:repeat(2, 1fr); gap:clamp(8px,1.5vh,14px);}
+    .answer-btn{
+      font-size:clamp(1.4rem, 4.2vh, 1.9rem);
+      padding:clamp(10px,2.3vh,20px) 6px;
+      border-bottom-width:6px; border-radius:16px;
+    }
+    .next-hint{margin-top:8px;}
+    .stage.answered .timer-wrap{display:none;}
+    .stage.answered .answer-btn{padding:8px 6px; font-size:1.25rem; border-bottom-width:4px;}
+    .hint-panel{padding:8px 12px; margin-bottom:8px; border-radius:14px;}
+    .hint-panel h4{font-size:0.95rem; margin-bottom:4px;}
+    .hint-line{font-size:0.82rem; padding:1px 0;}
+    .dot-array{--dot:7px; gap:2px; margin:2px auto;}
+    .dot-array i.d3{border-width:1px;}
+    .dot-caption{font-size:0.62rem;}
+    .swap-chip{padding:5px 12px; font-size:0.8rem; margin-bottom:8px;}
+    .next-btn{padding:10px 30px; font-size:1.05rem; width:100%; max-width:320px;}
+
+    /* Ergebnis-Screen */
+    .results{margin-top:6px;}
+    .results h2{font-size:1.5rem;}
+    .chest-big{margin:6px 0;}
+    .chest-big svg{width:88px; height:auto;}
+    .results .score-line{font-size:1.1rem; margin:6px 0;}
+    .results .coin-line{margin-bottom:10px; font-size:1rem;}
+    .big-btn{padding:12px 22px; font-size:1.05rem;}
+  }
+
+  /* Querformat am Handy: so kompakt wie möglich */
+  @media (max-height:520px) and (orientation:landscape){
+    .parrot-speech-center .parrot{display:none;}
+    .answers{grid-template-columns:repeat(4, 1fr);}
+    .question-card{padding:6px 30px; margin-bottom:6px;}
+    .question-card .expr{font-size:1.8rem;}
+    .answer-btn{padding:8px 4px; font-size:1.3rem;}
+    .playbar{margin-bottom:4px;}
+    .progress-dots{order:0; flex-basis:auto;}
+  }
 
   @media (prefers-reduced-motion: reduce){
     *{animation:none !important; transition:none !important;}
@@ -1040,25 +1137,25 @@
 
   function dotArrayHtml(a, b){
     var cols = b >= 8 ? 10 : b;
-    var h = '<div class="dot-array" style="grid-template-columns:repeat('+cols+',12px)">';
+    var h = '<div class="dot-wrap"><div class="dot-array" style="--cols:'+cols+'">';
     for(var r=0; r<a; r++){
       for(var c=0; c<cols; c++){
         var cls = c >= b ? 'd3' : (c < 5 ? 'd1' : 'd2');
         h += '<i class="'+cls+'"></i>';
       }
     }
-    h += '</div><div class="dot-caption">'+a+' Zeilen &middot; '+b+' Spalten'+(b >= 8 ? ' (gestrichelt: fehlt bis 10)' : '')+'</div>';
+    h += '</div><div class="dot-caption">'+a+' Zeilen &middot; '+b+' Spalten</div></div>';
     return h;
   }
 
   function feedbackExtrasHtml(q, isCorrect){
     var h = '';
     if(!isCorrect){
-      h += '<div class="hint-panel"><h4>💡 So geht’s leichter: '+q.a+' &times; '+q.b+'</h4>';
+      h += '<div class="hint-panel"><h4>💡 So geht’s leichter: '+q.a+' &times; '+q.b+'</h4><div class="hint-body"><div class="hint-lines">';
       strategyFor(q.a, q.b).forEach(function(line){
         h += '<div class="hint-line">'+line+'</div>';
       });
-      h += dotArrayHtml(q.a, q.b)+'</div>';
+      h += '</div>'+dotArrayHtml(q.a, q.b)+'</div></div>';
     }
     if(q.a !== q.b){
       h += '<div class="swap-chip">🔁 Tauschaufgabe: '+q.b+' &times; '+q.a+' = '+q.correct+' – gleiche Lösung!</div>';
@@ -1070,7 +1167,8 @@
     var hint = document.getElementById('nextHint');
     if(!hint) return;
     hint.innerHTML = feedbackExtrasHtml(q, isCorrect) + renderNextButtonHtml();
-    try{ hint.scrollIntoView({block:'end', behavior:'smooth'}); }catch(e){}
+    var stage = document.querySelector('.stage');
+    if(stage) stage.classList.add('answered'); // Timer-Leiste weg, Antwortknöpfe kleiner: so passt alles auf den Bildschirm
   }
 
   // ---------- INSEL-GRAFIK ----------
@@ -1157,9 +1255,8 @@
         s += '<circle cx="'+(70+r()*52).toFixed(0)+'" cy="'+(76+r()*42).toFixed(0)+'" r="'+(4+r()*4).toFixed(0)+'" fill="#a6e0a0" opacity="0.5"/>';
       }
       var j = Math.round(r()*8) - 4;
-      s += palmSvg(58+j, 108, -1, 0.85);
-      s += palmSvg(142-j, 100, 1, 0.9);
-      if(kind !== 'mixed') s += palmSvg(118+j, 150, 0.6, 0.65);
+      s += palmSvg(58+j, 98, -1, 0.8);
+      s += palmSvg(142-j, 94, 1, 0.85);
       if(kind === 'mixed'){
         s += '<path d="M124 128 l14 14 m0 -14 l-14 14" stroke="#d62828" stroke-width="5" stroke-linecap="round"/>';
       }
@@ -1438,14 +1535,12 @@
       var p = state.islandProgress[t];
       html += '<div class="island-pair">' + islandSvg(t, 'tropic');
       html += '  <button class="island-half order '+tierClass(p.order.tier)+'" onclick="RP.startIsland('+t+',\'order\')" aria-label="'+t+'er Reihe der Reihe nach üben">';
-      html += '    <span class="icon">➡️</span>';
       html += '    <span class="chest-mini">'+chestSvg(p.order.tier, 30)+'</span>';
-      html += '    <span class="txt">Reihe</span>';
+      html += '    <span class="txt">➡️ Reihe</span>';
       html += '  </button>';
       html += '  <button class="island-half shuffle '+tierClass(p.shuffle.tier)+'" onclick="RP.startIsland('+t+',\'shuffle\')" aria-label="'+t+'er Reihe gemischt üben">';
-      html += '    <span class="icon">🔀</span>';
       html += '    <span class="chest-mini">'+chestSvg(p.shuffle.tier, 30)+'</span>';
-      html += '    <span class="txt">Mix</span>';
+      html += '    <span class="txt">🔀 Mix</span>';
       html += '  </button>';
       html += '  <span class="divider"></span>';
       html += '  <span class="number-badge">'+t+'er</span>';
@@ -1530,18 +1625,19 @@
 
     html += '<div class="stage layout-'+state.equipped.layout+'">' + layoutDecoHtml(state.equipped.layout);
     html += '  <div class="parrot-speech-center">';
-    html += '    <div class="parrot">'+parrotSvg(72)+'</div>';
+    html += '    <div class="parrot">'+parrotSvg(56)+'</div>';
     html += '    <div class="bubble" id="parrotBubble">'+(opts.message || rand(PARROT_LINES.startPlay))+'</div>';
     html += '  </div>';
 
-    html += '  <div style="font-weight:800;color:rgba(255,255,255,0.7);margin-bottom:6px;">'+islandLabel+modeLabel+' &middot; Frage '+(state.qIndex+1)+' / '+QUESTIONS_PER_ISLAND+' &middot; '+COIN+' '+coinRateFor(state.currentIsland, state.currentMode)+' pro Treffer</div>';
+    html += '  <div class="play-label"><span>'+islandLabel+modeLabel+'</span>'
+          + '<span>Frage '+(state.qIndex+1)+'/'+QUESTIONS_PER_ISLAND+' &middot; '+COIN+' '+coinRateFor(state.currentIsland, state.currentMode)+' pro Treffer</span></div>';
 
     html += '  <div class="question-card"><div class="expr">'+q.a+' &times; '+q.b+' = ?</div></div>';
 
     if(state.timerSeconds > 0){
       html += '  <div class="timer-wrap"><div class="timer-bar" id="timerBar"></div></div>';
     } else {
-      html += '  <div style="height:26px;"></div>';
+      html += '  <div class="timer-wrap timer-off"></div>';
     }
 
     html += '  <div class="answers" id="answersRow">';
@@ -1655,7 +1751,7 @@
 
   function renderNextButtonHtml(){
     var label = state.qIndex < QUESTIONS_PER_ISLAND-1 ? 'Weiter ➜' : 'Truhe öffnen 🏆';
-    return '<button class="next-btn" onclick="RP.nextQuestion()">'+label+'</button>';
+    return '<div class="next-wrap"><button class="next-btn" onclick="RP.nextQuestion()">'+label+'</button></div>';
   }
 
   function nextQuestion(){
