@@ -731,6 +731,17 @@
   .lay-btns i{height:9px; border-radius:4px; display:block;}
   .lay-emoji{position:absolute; top:3px; right:6px; font-size:.9rem;}
 
+  .review{text-align:left;}
+  .review-list{display:flex; flex-wrap:wrap; gap:8px;}
+  .review-chip{
+    background:rgba(255,111,94,0.15);
+    border:2px solid rgba(255,111,94,0.4);
+    border-radius:14px;
+    padding:8px 14px;
+    font-weight:800;
+    color:var(--white);
+  }
+  .review-chip small{font-weight:700; color:rgba(255,255,255,0.7);}
   .coin-row{
     display:flex; justify-content:space-between; gap:12px;
     padding:6px 0;
@@ -863,6 +874,7 @@
     timerRemaining: 0,
     timerStartedAt: 0,
     paused: false,
+    roundWrong: [],
     owned: { hats: ['none'], themes: ['standard'], layouts: ['standard'] },
     equipped: { hat: 'none', theme: 'standard', layout: 'standard' },
     shopMsg: ''
@@ -1228,46 +1240,111 @@
   // ---------- QUESTION GENERATION ----------
   function factKey(a,b){ return a+'x'+b; }
 
+  var RECENT_WINDOW = 5; // wie viele letzte Versuche pro Aufgabe zählen
+
+  // Ältere Spielstände haben keinen Verlauf: Fehler grob als "zuletzt falsch" übernehmen
+  function ensureRecent(f){
+    if(!Array.isArray(f.recent)){
+      var w = Math.min(f.wrong || 0, 3);
+      var r = Math.min(Math.max((f.attempts || 0) - (f.wrong || 0), 0), 2);
+      f.recent = [];
+      for(var i=0; i<w; i++) f.recent.push(1);
+      for(i=0; i<r; i++) f.recent.push(0);
+    }
+    return f.recent;
+  }
+  function recentWrongCount(f){
+    return ensureRecent(f).reduce(function(s, x){ return s + x; }, 0);
+  }
+  function lastWasWrong(f){
+    var rc = ensureRecent(f);
+    return rc.length && rc[rc.length-1] === 1 ? 1 : 0;
+  }
+
   function recordAttempt(a, b, wasWrong){
     var key = factKey(a,b);
     if(!state.mistakeCounts[key]){
-      state.mistakeCounts[key] = {a:a, b:b, wrong:0, attempts:0};
+      state.mistakeCounts[key] = {a:a, b:b, wrong:0, attempts:0, recent:[]};
     }
-    state.mistakeCounts[key].attempts++;
-    if(wasWrong) state.mistakeCounts[key].wrong++;
+    var f = state.mistakeCounts[key];
+    ensureRecent(f);
+    f.attempts++;
+    if(wasWrong) f.wrong++;
+    f.recent.push(wasWrong ? 1 : 0);
+    if(f.recent.length > RECENT_WINDOW) f.recent.shift();
   }
 
+  // Aufgaben, die in den letzten Versuchen noch Fehler hatten (nach Schwere sortiert).
+  // Wer eine Aufgabe danach oft genug richtig löst, dessen Fehler fallen aus dem Verlauf.
   function getWorstFacts(){
     return Object.keys(state.mistakeCounts)
       .map(function(k){ return state.mistakeCounts[k]; })
-      .filter(function(f){ return f.wrong > 0; })
-      .sort(function(x,y){ return (y.wrong - x.wrong) || (y.attempts - x.attempts); });
+      .filter(function(f){ return recentWrongCount(f) > 0; })
+      .sort(function(x,y){
+        return (recentWrongCount(y) - recentWrongCount(x))
+            || (lastWasWrong(y) - lastWasWrong(x))
+            || (y.wrong - x.wrong);
+      });
+  }
+
+  function canonKey(a, b){ return Math.min(a,b)+'x'+Math.max(a,b); }
+
+  // Gemischte Insel: 10 verschiedene Aufgaben, auch keine Tauschaufgaben-Paare doppelt
+  function pickMixedPairs(){
+    var pool = [];
+    TABLES.forEach(function(t){
+      for(var b=1; b<=10; b++) pool.push({a:t, b:b});
+    });
+    var used = {}, out = [];
+    shuffle(pool).forEach(function(p){
+      if(out.length >= QUESTIONS_PER_ISLAND) return;
+      var k = canonKey(p.a, p.b);
+      if(used[k]) return;
+      used[k] = true;
+      out.push(p);
+    });
+    return out;
+  }
+
+  // Verwandte Aufgaben: Nachbarn in der Reihe und die Tauschaufgabe
+  function relatedFacts(f){
+    var out = [];
+    if(f.b > 1)  out.push({a:f.a, b:f.b-1});
+    if(f.b < 10) out.push({a:f.a, b:f.b+1});
+    if(f.b !== f.a && TABLES.indexOf(f.b) !== -1) out.push({a:f.b, b:f.a});
+    return out;
+  }
+
+  // Sturmklippen: zuerst die schwächsten Aufgaben, dann verwandte, dann knifflige Zufallsaufgaben
+  function pickStormPairs(){
+    var out = [], used = {};
+    function add(p){
+      var k = factKey(p.a, p.b);
+      if(used[k] || out.length >= QUESTIONS_PER_ISLAND) return;
+      used[k] = true;
+      out.push(p);
+    }
+    var weak = getWorstFacts();
+    weak.slice(0, QUESTIONS_PER_ISLAND).forEach(function(f){ add({a:f.a, b:f.b}); });
+    if(out.length < QUESTIONS_PER_ISLAND){
+      var rel = [];
+      weak.forEach(function(f){ relatedFacts(f).forEach(function(p){ rel.push(p); }); });
+      shuffle(rel).forEach(add);
+    }
+    var tries = 0;
+    while(out.length < QUESTIONS_PER_ISLAND && tries < 300){
+      add({a: rand(TABLES), b: 5 + Math.floor(Math.random()*5)});
+      tries++;
+    }
+    return shuffle(out);
   }
 
   function makeQuestionSet(a, mode){
     var multipliers;
     if(a === 'mixed'){
-      multipliers = [];
-      for(var i=0;i<QUESTIONS_PER_ISLAND;i++){
-        multipliers.push({a: rand(TABLES), b: 1 + Math.floor(Math.random()*10)});
-      }
+      multipliers = pickMixedPairs();
     } else if(a === 'storm'){
-      var worst = getWorstFacts();
-      multipliers = [];
-      if(worst.length === 0){
-        // Noch keine Fehler gesammelt: knifflige Zufallsaufgaben als Ersatz
-        for(var j=0;j<QUESTIONS_PER_ISLAND;j++){
-          multipliers.push({a: rand(TABLES), b: 6 + Math.floor(Math.random()*5)});
-        }
-      } else {
-        var idx = 0;
-        while(multipliers.length < QUESTIONS_PER_ISLAND){
-          var f = worst[idx % worst.length];
-          multipliers.push({a:f.a, b:f.b});
-          idx++;
-        }
-        multipliers = shuffle(multipliers);
-      }
+      multipliers = pickStormPairs();
     } else {
       var bs = (mode === 'order') ? [1,2,3,4,5,6,7,8,9,10] : shuffle([1,2,3,4,5,6,7,8,9,10]);
       multipliers = bs.map(function(b){ return {a:a, b:b}; });
@@ -1448,6 +1525,7 @@
     html += '  <div class="pill">'+COIN+' '+state.coins+'</div>';
     html += '  <div class="pill">🔥 '+state.streak+'</div>';
     html += '  <div class="progress-dots">'+dotsHtml+'</div>';
+    html += '  <button class="mute-btn" onclick="RP.toggleSound()" aria-label="Ton an/aus">'+(state.soundOn?'🔊':'🔇')+'</button>';
     html += '</div>';
 
     html += '<div class="stage layout-'+state.equipped.layout+'">' + layoutDecoHtml(state.equipped.layout);
@@ -1549,6 +1627,7 @@
     var q = state.questions[state.qIndex];
     state.results = state.results || [];
     state.results[state.qIndex] = false;
+    state.roundWrong.push({a:q.a, b:q.b, correct:q.correct, timeout:true});
     state.awaitingNext = true;
 
     recordAttempt(q.a, q.b, true);
@@ -1598,6 +1677,7 @@
     var isCorrect = value === q.correct;
     state.results = state.results || [];
     state.results[state.qIndex] = isCorrect;
+    if(!isCorrect) state.roundWrong.push({a:q.a, b:q.b, correct:q.correct, timeout:false});
     state.awaitingNext = true;
 
     recordAttempt(q.a, q.b, !isCorrect);
@@ -1701,7 +1781,20 @@
     html += '  <div class="chest-big">'+chestIcon+'</div>';
     html += '  <div class="score-line">'+islandLabel+': '+state.correctCount+' von '+QUESTIONS_PER_ISLAND+' richtig</div>';
     html += '  <div class="coin-line">+ '+state.coinsThisRound+' Münzen verdient &middot; Bestserie 🔥 '+state.maxStreak+'</div>';
-    html += '  <p style="color:rgba(255,255,255,0.8);font-weight:700;max-width:420px;margin:0 auto 24px;">'+message+'</p>';
+    html += '  <p style="color:rgba(255,255,255,0.8);font-weight:700;max-width:420px;margin:0 auto 18px;">'+message+'</p>';
+    if(state.roundWrong.length > 0){
+      html += '  <div class="stats-section review" style="max-width:460px;margin:0 auto 22px;">';
+      html += '    <h3>🔎 Das war knifflig</h3>';
+      html += '    <div class="review-list">';
+      state.roundWrong.forEach(function(w){
+        html += '<div class="review-chip">'+w.a+' &times; '+w.b+' = '+w.correct+(w.timeout ? ' <small>(Zeit abgelaufen)</small>' : '')+'</div>';
+      });
+      html += '    </div>';
+      html += '    <div class="coin-note">Diese Aufgaben tauchen auch auf den Sturmklippen wieder auf.</div>';
+      html += '  </div>';
+    } else {
+      html += '  <div class="coin-note" style="margin:0 auto 22px;font-size:1rem;">✨ Alles richtig – nichts war knifflig!</div>';
+    }
     html += '  <div class="result-buttons">';
     var retryArgs = "'"+state.currentIsland+"'" + (state.currentMode ? ",'"+state.currentMode+"'" : '');
     html += '    <button class="big-btn btn-gold" onclick="RP.startIsland('+retryArgs+')">🔁 Nochmal versuchen</button>';
@@ -1777,7 +1870,7 @@
     } else {
       html += '  <div class="worst-list">';
       worst.forEach(function(f, i){
-        html += '<div class="worst-fact-chip"><span><span class="rank">'+(i+1)+'.</span>'+f.a+' &times; '+f.b+' = '+(f.a*f.b)+'</span><span class="count">'+f.wrong+'&times; falsch</span></div>';
+        html += '<div class="worst-fact-chip"><span><span class="rank">'+(i+1)+'.</span>'+f.a+' &times; '+f.b+' = '+(f.a*f.b)+'</span><span class="count">'+recentWrongCount(f)+' von '+f.recent.length+' zuletzt falsch</span></div>';
       });
       html += '  </div>';
     }
@@ -1805,6 +1898,7 @@
     state.maxStreak = 0;
     state.coinsThisRound = 0;
     state.results = [];
+    state.roundWrong = [];
     state.awaitingNext = false;
     state.screen = 'play';
     renderPlay();
@@ -1945,7 +2039,10 @@
   function toggleSound(){
     state.soundOn = !state.soundOn;
     saveGame();
-    render();
+    // nur das Symbol aktualisieren, nicht neu zeichnen: sonst würde im Spiel die Aufgabe und der Timer neu starten
+    var icon = state.soundOn ? '🔊' : '🔇';
+    document.querySelectorAll('.mute-btn').forEach(function(b){ b.textContent = icon; });
+    if(state.soundOn) beep([659.25], 0.12);
   }
 
   function render(){
